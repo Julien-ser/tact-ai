@@ -11,7 +11,7 @@
 - [x] **Build Eisenhower quadrant classifier**: Implement `backend/ai/classifier.py` using OpenAI GPT-4 with structured prompts. Add Redis caching layer and a fallback keyword-based classifier. Write unit tests with example tasks.
 - [x] **Develop task chain resolver**: Create `backend/scheduler/dependency.py` to handle task chains via topological sort, detect cycles, and compute earliest start times. Include test cases for complex chains.
 - [x] **Implement AI scheduling engine**: Use ortools CP-SAT to generate daily/weekly schedules respecting deadlines, dependencies, priorities, and working hours. Output JSON with start/end timestamps. Add benchmark script.
-- [ ] **Create conflict detection module**: Build `backend/scheduler/conflicts.py` to identify overlapping tasks, resource over-allocation, and missed deadlines. Return actionable conflict reports for frontend display.
+- [x] **Create conflict detection module**: Build `backend/scheduler/conflicts.py` to identify overlapping tasks, resource over-allocation, and missed deadlines. Return actionable conflict reports for frontend display.
 
 ## Phase 3: User Interface & Task Management
 - [ ] **Construct React component library**: Build `frontend/components/` with `TaskCard`, `QuadrantBoard` (drag-and-drop), `TimelineView` (d3.js Gantt), and `ChainVisualizer`. Apply Tailwind CSS styling.

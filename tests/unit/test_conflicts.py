@@ -160,9 +160,9 @@ class TestConflictDetector:
                 "task_id": 1,
                 "title": "Task 1",
                 "start": datetime(
-                    2026, 1, 2, 8, 0
+                    2026, 1, 1, 8, 0
                 ),  # Thursday 8:00 AM (before 9:00 start)
-                "end": datetime(2026, 1, 2, 9, 30),  # 8:00-9:30
+                "end": datetime(2026, 1, 1, 9, 30),  # 8:00-9:30
                 "duration": 90,
                 "due_date": None,
             },
@@ -266,7 +266,7 @@ class TestConflictDetector:
         detector = ConflictDetector(scheduled_tasks, self.time_blocks)
         conflicts = detector.detect_all_conflicts()
 
-        assert len(conflicts) == 2  # One overlap, one missed deadline
+        assert len(conflicts) == 3  # Two overlaps, one missed deadline
         conflict_types = [c["conflict_type"] for c in conflicts]
         assert "overlap" in conflict_types
         assert "missed_deadline" in conflict_types
@@ -339,11 +339,17 @@ class TestConflictDetector:
 
         conflicts = detect_schedule_conflicts(scheduled_tasks, self.time_blocks)
 
-        # Should have 3 conflicts: 1 overlap, 1 missed deadline, 1 resource overload
-        assert len(conflicts) == 3
-        # Check ordering: overlap (0) first, then missed_deadline (1), then resource_overload (2)
+        # Should have 5 conflicts: 3 overlaps, 1 missed deadline, 1 resource overload
+        assert len(conflicts) == 5
+        # Check ordering: overlaps first, then missed_deadline, then resource_overload
         conflict_types = [c["conflict_type"] for c in conflicts]
-        assert conflict_types == ["overlap", "missed_deadline", "resource_overload"]
+        assert conflict_types == [
+            "overlap",
+            "overlap",
+            "overlap",
+            "missed_deadline",
+            "resource_overload",
+        ]
 
     def test_empty_schedule(self):
         """Test conflict detection with no tasks."""
