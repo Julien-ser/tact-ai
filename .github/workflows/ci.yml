@@ -107,7 +107,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/backend/Dockerfile
+          file: docker/Dockerfile.backend
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/tact-ai-backend:latest
@@ -116,7 +116,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/frontend/Dockerfile
+          file: docker/Dockerfile.frontend
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/tact-ai-frontend:latest

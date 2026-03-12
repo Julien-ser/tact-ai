@@ -180,10 +180,24 @@ See [docs/database.md](./docs/database.md) for the complete ER diagram and schem
    mypy backend/                     # Type checking
    npm run lint                      # Frontend linting
    ```
-5. **Commit** with conventional commit message
-6. **Push** and create PR
+5. **Pre-commit hooks** - Automatically format and lint on commit (configured in `.pre-commit-config.yaml`)
+6. **Commit** with conventional commit message
+7. **Push** and create PR
 
 See [TASKS.md](./TASKS.md) for the current development roadmap.
+
+## CI/CD
+
+The project uses GitHub Actions for continuous integration and delivery:
+
+- **Linting**: Black (formatting) and Ruff (linting) on all Python code
+- **Type checking**: mypy strict mode on backend and shared modules
+- **Testing**: pytest with PostgreSQL and Redis services, coverage reporting to Codecov
+- **Docker builds**: Automated multi-arch builds for backend and frontend images, pushed to Docker Hub on merges to main
+
+Pre-commit hooks run locally to ensure code quality before commits. All checks must pass before PRs can be merged.
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full pipeline configuration.
 
 ## Architecture
 
