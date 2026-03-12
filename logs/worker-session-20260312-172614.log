@@ -2792,3 +2792,29 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/README.md
 [0m
 Update the README status:
 Now commit and push all changes:
+[0m$ [0mgit add . && git commit -m "feat: implement task chain resolver with topological sort, cycle detection, and earliest time computation
+
+- Add DependencyResolver class in backend/scheduler/dependency.py
+- Implement topological_sort using Kahn's algorithm
+- Implement detect_cycles using DFS
+- Implement compute_earliest_times for scheduling
+- Add convenience function resolve_task_chain
+- Comprehensive unit tests (41 tests passing)
+- Update TASKS.md to mark resolver complete
+- Update README.md with current development phase"
+[main eb78d00] feat: implement task chain resolver with topological sort, cycle detection, and earliest time computation
+ 8 files changed, 1526 insertions(+), 18 deletions(-)
+ create mode 100644 logs/iteration-34.md
+[0m
+[0m$ [0mgit push origin main
+To https://github.com/Julien-ser/tact-ai.git
+   785a944..eb78d00  main -> main
+[0m
+Task chain resolver implementation complete and verified. All 41 unit tests passing. Changes committed and pushed.
+
+- Added `DependencyResolver` with topological sort, cycle detection, and earliest time computation
+- Fixed test issues (cycle representation, slack calculation, invalid self-loop test)
+- Updated TASKS.md and README.md
+- All changes pushed to GitHub
+📝 Log saved: logs/iteration-34.md
+📊 Token Usage: 13500 / Session: 62000 / 64000
