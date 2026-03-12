@@ -186,3 +186,204 @@ To https://github.com/Julien-ser/tact-ai.git
 Database schema task complete. All tables, migrations, and ER diagram implemented. TASKS.md and README.md updated and pushed.
 📝 Log saved: logs/iteration-26.md
 📊 Token Usage: 5250 / Session: 5250 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   318dbeb..cafa61e  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 4/16 completed, 12 remaining
+   Next task: **Build Eisenhower quadrant classifier**: Implement `backend...
+📍 Iteration 27 at Thu Mar 12 05:27:35 PM EDT 2026...
+🤖 OpenCode processing: **Build Eisenhower quadrant classifier**: Implement `backend/ai/classifier.py` using OpenAI GPT-4 with structured prompts. Add Redis caching layer and a fallback keyword-based classifier. Write unit tests with example tasks.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll start by exploring the project structure to understand the existing setup and then implement the Eisenhower quadrant classifier.
+[0m→ [0mRead .
+[0m✱ [0mGlob "**/*.py"[90m 15 matches[0m
+[0m→ [0mRead backend/config.py
+[0m→ [0mRead requirements.txt
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/
+total 52
+drwxr-xr-x  9 julien julien 4096 Mar 12 17:21 .
+drwxr-xr-x 12 julien julien 4096 Mar 12 17:20 ..
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 ai
+drwxr-xr-x  3 julien julien 4096 Mar 12 17:19 alembic
+-rw-r--r--  1 julien julien 1326 Mar 12 17:19 alembic.ini
+-rw-r--r--  1 julien julien  644 Mar 12 16:53 config.py
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 core
+drwxr-xr-x  3 julien julien 4096 Mar 12 17:20 database
+-rw-r--r--  1 julien julien   23 Mar 12 17:21 __init__.py
+-rw-r--r--  1 julien julien  929 Mar 12 16:54 main.py
+drwxr-xr-x  2 julien julien 4096 Mar 12 17:01 models
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 routers
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 scheduler
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/ai/
+total 8
+drwxr-xr-x 2 julien julien 4096 Mar 12 16:53 .
+drwxr-xr-x 9 julien julien 4096 Mar 12 17:21 ..
+[0m
+[0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/
+total 16
+drwxr-xr-x  4 julien julien 4096 Mar 12 16:53 .
+drwxr-xr-x 12 julien julien 4096 Mar 12 17:20 ..
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 integration
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 unit
+[0m
+[0m→ [0mRead shared/schemas.py
+[0m→ [0mRead backend/main.py
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/unit/ && ls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/integration/
+total 8
+drwxr-xr-x 2 julien julien 4096 Mar 12 16:53 .
+drwxr-xr-x 4 julien julien 4096 Mar 12 16:53 ..
+total 8
+drwxr-xr-x 2 julien julien 4096 Mar 12 16:53 .
+drwxr-xr-x 4 julien julien 4096 Mar 12 16:53 ..
+[0m
+Now I'll create the Eisenhower quadrant classifier with OpenAI integration, Redis caching, and fallback keyword-based classification.
+[0m← [0mWrite backend/ai/classifier.py
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/config.py">
+ERROR [31:12] Argument missing for parameter "OPENAI_API_KEY"
+</diagnostics>
+[0m
+Now I'll create comprehensive unit tests for the classifier:
+[0m← [0mWrite tests/unit/test_classifier.py
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/config.py">
+ERROR [31:12] Argument missing for parameter "OPENAI_API_KEY"
+</diagnostics>
+[0m
+[0m$ [0mtest -f /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/unit/__init__.py && echo "exists" || echo "missing"
+missing
+[0m
+[0m← [0mWrite tests/integration/__init__.py
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/config.py">
+ERROR [31:12] Argument missing for parameter "OPENAI_API_KEY"
+</diagnostics>
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/ai/classifier.py">
+ERROR [16:8] Import "redis" could not be resolved
+ERROR [284:24] No overloads for "max" match the provided arguments
+ERROR [284:40] Argument of type "Overload[(key: str, default: None = None, /) -> (int | None), (key: str, default: int, /) -> int, (key: str, default: _T@get, /) -> (int | _T@get)]" cannot be assigned to parameter "key" of type "(_T@max) -> SupportsRichComparison" in function "max"
+  No overloaded function matches type "(str) -> SupportsRichComparison"
+ERROR [320:44] "get" is not a known attribute of "None"
+ERROR [339:35] "setex" is not a known attribute of "None"
+</diagnostics>
+[0m
+[0m← [0mWrite tests/unit/__init__.py
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/config.py">
+ERROR [31:12] Argument missing for parameter "OPENAI_API_KEY"
+</diagnostics>
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/ai/classifier.py">
+ERROR [16:8] Import "redis" could not be resolved
+ERROR [284:24] No overloads for "max" match the provided arguments
+ERROR [284:40] Argument of type "Overload[(key: str, default: None = None, /) -> (int | None), (key: str, default: int, /) -> int, (key: str, default: _T@get, /) -> (int | _T@get)]" cannot be assigned to parameter "key" of type "(_T@max) -> SupportsRichComparison" in function "max"
+  No overloaded function matches type "(str) -> SupportsRichComparison"
+ERROR [320:44] "get" is not a known attribute of "None"
+ERROR [339:35] "setex" is not a known attribute of "None"
+</diagnostics>
+[0m
+[0m→ [0mRead backend/ai/classifier.py[90m [limit=20, offset=1][0m
+I need to fix the LSP errors. Let me update the classifier with proper type hints and None checks:
+Let me install dependencies first to resolve the import issue:
+[0m
+[0m$ [0mpip install -q -r requirements.txt
+error: subprocess-exited-with-error
+  
+  × Getting requirements to build wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [34 lines of output]
+      /tmp/pip-build-env-tqfqsi6l/overlay/lib/python3.14/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+      
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+      
+              License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+      
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+      
+      !!
+        self._finalize_license_expression()
+      running egg_info
+      writing psycopg2_binary.egg-info/PKG-INFO
+      writing dependency_links to psycopg2_binary.egg-info/dependency_links.txt
+      writing top-level names to psycopg2_binary.egg-info/top_level.txt
+      
+      Error: pg_config executable not found.
+      
+      pg_config is required to build psycopg2 from source.  Please add the directory
+      containing pg_config to the $PATH or specify the full executable path with the
+      option:
+      
+          python setup.py build_ext --pg-config /path/to/pg_config build ...
+      
+      or with the pg_config option in 'setup.cfg'.
+      
+      If you prefer to avoid building psycopg2 from source, please install the PyPI
+      'psycopg2-binary' package instead.
+      
+      For further information please check the 'doc/src/install.rst' file (also at
+      <https://www.psycopg.org/docs/install.html>).
+      
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'psycopg2-binary' when getting requirements to build wheel
+[0m
+[0m$ [0mpip install --only-binary :all: psycopg2-binary==2.9.9 -q
+ERROR: Could not find a version that satisfies the requirement psycopg2-binary==2.9.9 (from versions: 2.9.11)
+ERROR: No matching distribution found for psycopg2-binary==2.9.9
+[0m
+[0m→ [0mRead pyproject.toml
+[0m
+[0m$ [0mpip install -e ".[dev]" -q 2>&1 | tail -20
+│ exit code: 1
+  ╰─> [14 lines of output]
+      error: Multiple top-level packages discovered in a flat-layout: ['logs', 'shared', 'docker', 'backend', 'frontend'].
+      
+      To avoid accidental inclusion of unwanted files or directories,
+      setuptools will not proceed with this build.
+      
+      If you are trying to create a single distribution with multiple packages
+      on purpose, you should not rely on automatic discovery.
+      Instead, consider the following options:
+      
+      1. set up custom discovery (`find` directive with `include` or `exclude`)
+      2. use a `src-layout`
+      3. explicitly set `py_modules` or `packages` with a list of names
+      
+      To find more information, look for "package discovery" on setuptools docs.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'file:///home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai' when getting requirements to build editable
+[0m
+Let me install the core dependencies we need individually:
+[0m$ [0mpip install -q openai redis pytest pytest-asyncio pydantic pydantic-settings 2>&1 | grep -i error || echo "Install successful"
+Install successful
+[0m
+[0m→ [0mRead backend/ai/classifier.py[90m [limit=60, offset=130][0m
+[0m→ [0mRead backend/ai/classifier.py[90m [limit=80, offset=190][0m
+[0m→ [0mRead backend/ai/classifier.py[90m [limit=50, offset=270][0m
+📝 Log saved: logs/iteration-27.md
+📊 Token Usage: 4750 / Session: 10000 / 64000
