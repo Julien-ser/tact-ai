@@ -2,7 +2,7 @@
 **Mission:** An AI-based scheduler that is based off of the eisenhower matrix, organizing tasks, task chains and timelines....
 
 ## Phase 1: Planning & Setup
-- [x] **Finalize tech stack**: Document decision to use FastAPI backend, React frontend, PostgreSQL, Redis, OpenAI API, and ortools in `docs/architecture.md` with component diagram.
+- [ ] **Finalize tech stack**: Document decision to use FastAPI backend, React frontend, PostgreSQL, Redis, OpenAI API, and ortools in `docs/architecture.md` with component diagram.
 - [ ] **Initialize monorepo structure**: Create directories `backend/`, `frontend/`, `shared/`, `docker/`, `tests/`. Generate `requirements.txt`, `pyproject.toml`, `docker-compose.yml`, and `.env.example` with all necessary config placeholders.
 - [ ] **Configure CI/CD pipelines**: Set up GitHub Actions for linting (black, ruff), type checking (mypy), and tests (pytest). Add pre-commit hooks for code formatting. Create build pipelines for Docker images.
 - [ ] **Design and implement database schema**: Write Alembic migrations for tables: `users`, `tasks`, `task_chains`, `timelines`, `time_blocks`. Create ER diagram in `docs/database.md`.
