@@ -100,16 +100,31 @@ async def register(
     # Create new user with hashed password
     db_user = UserModel(
         email=user_data.email,
+        username=user_data.username,
         hashed_password=get_password_hash(user_data.password),
     )
-    # Optional: store username if needed (currently not in User model)
-    # Could be added if needed for display purposes
 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
     return db_user
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_profile(
+    current_user: UserModel = Depends(get_current_user),
+):
+    """
+    Get the current authenticated user's profile.
+
+    Args:
+        current_user: Authenticated user model (from JWT token)
+
+    Returns:
+        Current user profile
+    """
+    return current_user
 
 
 @router.post("/login", response_model=Token)

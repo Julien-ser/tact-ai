@@ -41,26 +41,27 @@ def upgrade():
     relationship_type_enum.create(op.get_bind(), checkfirst=True)
     day_of_week_enum.create(op.get_bind(), checkfirst=True)
 
-    # Create users table
-    op.create_table(
-        "users",
-        sa.Column("id", sa.Integer, primary_key=True, index=True),
-        sa.Column("email", sa.String, unique=True, index=True, nullable=False),
-        sa.Column("hashed_password", sa.String, nullable=False),
-        sa.Column("is_active", sa.Boolean, default=True, nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("NOW()"),
-            nullable=False,
-        ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            onupdate=sa.text("NOW()"),
-            nullable=True,
-        ),
-    )
+     # Create users table
+     op.create_table(
+         "users",
+         sa.Column("id", sa.Integer, primary_key=True, index=True),
+         sa.Column("email", sa.String, unique=True, index=True, nullable=False),
+         sa.Column("username", sa.String, nullable=True),
+         sa.Column("hashed_password", sa.String, nullable=False),
+         sa.Column("is_active", sa.Boolean, default=True, nullable=False),
+         sa.Column(
+             "created_at",
+             sa.DateTime(timezone=True),
+             server_default=sa.text("NOW()"),
+             nullable=False,
+         ),
+         sa.Column(
+             "updated_at",
+             sa.DateTime(timezone=True),
+             onupdate=sa.text("NOW()"),
+             nullable=True,
+         ),
+     )
 
     # Create tasks table
     op.create_table(

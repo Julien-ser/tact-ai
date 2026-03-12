@@ -133,8 +133,8 @@ Optional:
 
 ### Authentication
 - `POST /auth/register` - Create user account
-- `POST /auth/login` - Obtain JWT tokens
-- `POST /auth/refresh` - Refresh access token
+- `POST /auth/login` - Obtain JWT access token
+- `GET /auth/me` - Get current user profile (requires authentication)
 
 ### Tasks
 - `GET /tasks/` - List user's tasks (with filters)
@@ -243,4 +243,4 @@ For issues, feature requests, or questions, please open an issue on GitHub or co
 
 ---
 
-**Status**: In active development - Phase 3: User Interface & Task Management (React Component Library and Full Task CRUD Complete)
+**Status**: In active development - Phase 3: User Interface & Task Management (Authentication, React Component Library, and Full Task CRUD Complete)

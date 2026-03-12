@@ -9,18 +9,14 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.routers.tasks import router, get_current_user_id
+from backend.routers.tasks import router
+from backend.auth.utils import get_current_user
 from backend.models.task import Task as TaskModel
+from backend.models.user import User as UserModel
 from shared.schemas import TaskCreate, TaskUpdate, Priority, Quadrant
 
 
-class TestGetCurrentUserId:
-    """Test the temporary get_current_user_id function"""
-
-    def test_returns_one(self):
-        """Test that get_current_user_id returns 1 (development placeholder)"""
-        user_id = get_current_user_id()
-        assert user_id == 1
+# Note: Tests now use the real get_current_user dependency but mock it to return user_id
 
 
 class TestListTasks:
@@ -74,7 +70,10 @@ class TestListTasks:
         mock_db.execute.return_value = mock_query
 
         # Call the endpoint directly (simulating dependency injection)
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[0].endpoint(
                 completed=None, priority=None, db=mock_db
             )
@@ -95,7 +94,10 @@ class TestListTasks:
         mock_query.all.return_value = active_tasks
         mock_db.execute.return_value = mock_query
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[0].endpoint(
                 completed=False, priority=None, db=mock_db
             )
@@ -115,7 +117,10 @@ class TestListTasks:
         mock_query.all.return_value = high_priority
         mock_db.execute.return_value = mock_query
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[0].endpoint(
                 completed=None, priority=Priority.HIGH, db=mock_db
             )
@@ -164,7 +169,10 @@ class TestCreateTask:
         mock_db.commit.return_value = None
         mock_db.refresh.return_value = None
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             # Call directly with mocked model instantiation
             with patch.object(TaskModel, "__init__", return_value=None) as mock_init:
                 result = await router.routes[1].endpoint(
@@ -192,7 +200,10 @@ class TestCreateTask:
         mock_classifier = MagicMock()
         mock_classifier.classify = AsyncMock(return_value=mock_classification)
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             with patch(
                 "backend.routers.tasks.EisenhowerQuadrantClassifier",
                 return_value=mock_classifier,
@@ -238,7 +249,10 @@ class TestGetTask:
         mock_result.scalar_one_or_none.return_value = mock_task
         mock_db.execute.return_value = mock_result
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[2].endpoint(task_id=42, db=mock_db)
 
         assert result.id == 42
@@ -251,7 +265,10 @@ class TestGetTask:
         mock_result.scalar_one_or_none.return_value = None
         mock_db.execute.return_value = mock_result
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             with pytest.raises(HTTPException) as exc_info:
                 await router.routes[2].endpoint(task_id=999, db=mock_db)
 
@@ -268,7 +285,10 @@ class TestGetTask:
         )
         mock_db.execute.return_value = mock_result
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             with pytest.raises(HTTPException) as exc_info:
                 await router.routes[2].endpoint(task_id=42, db=mock_db)
 
@@ -313,7 +333,10 @@ class TestUpdateTask:
         mock_db.commit.return_value = None
         mock_db.refresh.return_value = None
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[3].endpoint(
                 task_id=42, task_update=update_data, db=mock_db
             )
@@ -334,7 +357,10 @@ class TestUpdateTask:
         mock_db.execute.return_value = mock_result
         mock_db.commit.return_value = None
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[3].endpoint(
                 task_id=42, task_update=update_data, db=mock_db
             )
@@ -352,7 +378,10 @@ class TestUpdateTask:
 
         update_data = TaskUpdate(title="Updated")
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             with pytest.raises(HTTPException) as exc_info:
                 await router.routes[3].endpoint(
                     task_id=999, task_update=update_data, db=mock_db
@@ -386,7 +415,10 @@ class TestDeleteTask:
         mock_db.delete.return_value = None
         mock_db.commit.return_value = None
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             result = await router.routes[4].endpoint(task_id=42, db=mock_db)
 
         assert result is None
@@ -400,7 +432,10 @@ class TestDeleteTask:
         mock_result.scalar_one_or_none.return_value = None
         mock_db.execute.return_value = mock_result
 
-        with patch("backend.routers.tasks.get_current_user_id", return_value=1):
+        with patch("backend.routers.tasks.get_current_user") as mock_get_user:
+            mock_get_user.return_value = UserModel(
+                id=1, email="test@example.com", username="test"
+            )
             with pytest.raises(HTTPException) as exc_info:
                 await router.routes[4].endpoint(task_id=999, db=mock_db)
 
