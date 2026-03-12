@@ -4,20 +4,26 @@ from datetime import datetime
 
 
 class Quadrant(str):
-    IMPORTANT_URGENT = "important_urgent"
-    IMPORTANT_NOT_URGENT = "important_not_urgent"
-    NOT_IMPORTANT_URGENT = "not_important_urgent"
-    NOT_IMPORTANT_NOT_URGENT = "not_important_not_urgent"
+    Q1 = "Q1"  # Urgent & Important
+    Q2 = "Q2"  # Not Urgent & Important
+    Q3 = "Q3"  # Urgent & Not Important
+    Q4 = "Q4"  # Not Urgent & Not Important
+
+
+class Priority(str):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 class TaskBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=1000)
-    category: Optional[str] = Field(None, max_length=100)
-    estimated_duration_minutes: int = Field(default=60, ge=15, le=480)
-    deadline: Optional[datetime] = None
-    dependencies: List[str] = Field(default_factory=list)  # task IDs
-    priority: int = Field(default=3, ge=1, le=5)
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=2000)
+    quadrant: Quadrant  # AI-classified, required on creation
+    priority: Priority = Priority.MEDIUM
+    estimated_duration: Optional[int] = Field(None, ge=15, le=480)  # in minutes
+    due_date: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):
@@ -25,24 +31,20 @@ class TaskCreate(TaskBase):
 
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=1000)
-    category: Optional[str] = Field(None, max_length=100)
-    estimated_duration_minutes: Optional[int] = Field(None, ge=15, le=480)
-    deadline: Optional[datetime] = None
-    dependencies: Optional[List[str]] = None
-    priority: Optional[int] = Field(None, ge=1, le=5)
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=2000)
     quadrant: Optional[Quadrant] = None
+    priority: Optional[Priority] = None
+    estimated_duration: Optional[int] = Field(None, ge=15, le=480)
+    due_date: Optional[datetime] = None
+    completed: Optional[bool] = None
 
 
 class TaskResponse(TaskBase):
-    id: str
-    user_id: str
-    quadrant: Quadrant
+    id: int
+    user_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    scheduled_start: Optional[datetime] = None
-    scheduled_end: Optional[datetime] = None
 
     class Config:
         from_attributes = True

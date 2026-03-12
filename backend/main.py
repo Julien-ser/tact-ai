@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
+from .routers import tasks
 
 app = FastAPI(
     title="Tact AI",
@@ -25,11 +26,8 @@ async def health_check():
     return {"status": "healthy", "environment": settings.ENVIRONMENT}
 
 
-# Include routers will be added here
-# from .routers import tasks, users, auth
-# app.include_router(auth.router)
-# app.include_router(users.router)
-# app.include_router(tasks.router)
+# Include routers
+app.include_router(tasks.router)
 
 if __name__ == "__main__":
     import uvicorn

@@ -136,3 +136,221 @@ This completes Phase 3 milestone: React component library ready for integration"
 [0m
 📝 Log saved: logs/iteration-46.md
 📊 Token Usage: 4500 / Session: 4500 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   e3dbe15..c7d673b  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 9/16 completed, 7 remaining
+   Next task: **Implement full task CRUD**: Create FastAPI REST endpoints ...
+📍 Iteration 47 at Thu Mar 12 07:06:51 PM EDT 2026...
+🤖 OpenCode processing: **Implement full task CRUD**: Create FastAPI REST endpoints for tasks (with AI classification on create). Build React forms for natural language input and manual editing. Add API integration in frontend.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll implement the full task CRUD functionality. Let me start by exploring the current project structure to understand what's already in place.
+[0m✱ [0mGlob "**/*.py"[90m 28 matches[0m
+[0m→ [0mRead TASKS.md
+[0m✱ [0mGlob "**/*.tsx"[90m 8 matches[0m
+[0m✱ [0mGlob "**/*.ts"[90m 2 matches[0m
+Let me examine the existing backend structure and models to understand what's already set up:
+[0m→ [0mRead shared/schemas.py
+[0m→ [0mRead backend/main.py
+[0m→ [0mRead backend/models/task.py
+[0m→ [0mRead backend/database/__init__.py
+[0m→ [0mRead frontend/src
+[0m→ [0mRead README.md
+[0m→ [0mRead frontend/src/services
+[0m→ [0mRead frontend/src/pages
+[0m→ [0mRead frontend/src/components/TaskCard.tsx
+[0m→ [0mRead backend/ai/classifier.py
+[0m→ [0mRead frontend/src/types/index.ts
+[0m
+[0m# [0mTodos
+[ ] Create backend task CRUD router with AI classification
+[ ] Update schemas to match database model
+[ ] Integrate task router into main.py
+[ ] Create frontend API service for tasks
+[ ] Build TaskForm component for natural language + manual input
+[ ] Create Tasks page with list and form
+[ ] Add tests for task endpoints
+[ ] Update TASKS.md and README.md
+[0m
+Now let me create a comprehensive todo list and start implementing:
+[0m# [0mTodos
+[ ] Create backend task CRUD router with AI classification
+[ ] Update schemas to match database model
+[ ] Integrate task router into main.py
+[ ] Create frontend API service for tasks
+[ ] Build TaskForm component for natural language + manual input
+[ ] Create Tasks page with list and form
+[ ] Add tests for task endpoints
+[ ] Update TASKS.md and README.md
+[0m
+Let me start by updating the schemas to match the database model, then create the task router:
+[0m← [0mEdit shared/schemas.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/shared/schemas.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/shared/schemas.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/shared/schemas.py
+@@ -3,47 +3,49 @@
+ from datetime import datetime
+ 
+ 
+ class Quadrant(str):
+-    IMPORTANT_URGENT = "important_urgent"
+-    IMPORTANT_NOT_URGENT = "important_not_urgent"
+-    NOT_IMPORTANT_URGENT = "not_important_urgent"
+-    NOT_IMPORTANT_NOT_URGENT = "not_important_not_urgent"
++    Q1 = "Q1"  # Urgent & Important
++    Q2 = "Q2"  # Not Urgent & Important
++    Q3 = "Q3"  # Urgent & Not Important
++    Q4 = "Q4"  # Not Urgent & Not Important
+ 
+ 
++class Priority(str):
++    LOW = "low"
++    MEDIUM = "medium"
++    HIGH = "high"
++    CRITICAL = "critical"
++
++
+ class TaskBase(BaseModel):
+-    title: str = Field(..., min_length=1, max_length=200)
+-    description: Optional[str] = Field(None, max_length=1000)
+-    category: Optional[str] = Field(None, max_length=100)
+-    estimated_duration_minutes: int = Field(default=60, ge=15, le=480)
+-    deadline: Optional[datetime] = None
+-    dependencies: List[str] = Field(default_factory=list)  # task IDs
+-    priority: int = Field(default=3, ge=1, le=5)
++    title: str = Field(..., min_length=1, max_length=255)
++    description: Optional[str] = Field(None, max_length=2000)
++    quadrant: Quadrant  # AI-classified, required on creation
++    priority: Priority = Priority.MEDIUM
++    estimated_duration: Optional[int] = Field(None, ge=15, le=480)  # in minutes
++    due_date: Optional[datetime] = None
+ 
+ 
+ class TaskCreate(TaskBase):
+     pass
+ 
+ 
+ class TaskUpdate(BaseModel):
+-    title: Optional[str] = Field(None, min_length=1, max_length=200)
+-    description: Optional[str] = Field(None, max_length=1000)
+-    category: Optional[str] = Field(None, max_length=100)
+-    estimated_duration_minutes: Optional[int] = Field(None, ge=15, le=480)
+-    deadline: Optional[datetime] = None
+-    dependencies: Optional[List[str]] = None
+-    priority: Optional[int] = Field(None, ge=1, le=5)
++    title: Optional[str] = Field(None, min_length=1, max_length=255)
++    description: Optional[str] = Field(None, max_length=2000)
+     quadrant: Optional[Quadrant] = None
++    priority: Optional[Priority] = None
++    estimated_duration: Optional[int] = Field(None, ge=15, le=480)
++    due_date: Optional[datetime] = None
++    completed: Optional[bool] = None
+ 
+ 
+ class TaskResponse(TaskBase):
+-    id: str
+-    user_id: str
+-    quadrant: Quadrant
++    id: int
++    user_id: int
+     created_at: datetime
+     updated_at: Optional[datetime] = None
+-    scheduled_start: Optional[datetime] = None
+-    scheduled_end: Optional[datetime] = None
+ 
+     class Config:
+         from_attributes = True
+ 
+
+[0m
+Now let me create the task CRUD router with AI classification:
+[0m← [0mWrite backend/routers/tasks.py
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[x] Create backend task CRUD router with AI classification
+[x] Update schemas to match database model
+[x] Integrate task router into main.py
+[ ] Create frontend API service for tasks
+[ ] Build TaskForm component for natural language + manual input
+[ ] Create Tasks page with list and form
+[ ] Add tests for task endpoints
+[ ] Update TASKS.md and README.md
+[0m
+Now update main.py to include the tasks router:
+[0m← [0mEdit backend/main.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
+@@ -1,8 +1,9 @@
+ from fastapi import FastAPI, Depends, HTTPException
+ from fastapi.middleware.cors import CORSMiddleware
+ from fastapi.security import OAuth2PasswordBearer
+ from .config import settings
++from .routers import tasks
+ 
+ app = FastAPI(
+     title="Tact AI",
+     description="AI-based scheduler using Eisenhower matrix",
+@@ -24,13 +25,10 @@
+ async def health_check():
+     return {"status": "healthy", "environment": settings.ENVIRONMENT}
+ 
+ 
+-# Include routers will be added here
+-# from .routers import tasks, users, auth
+-# app.include_router(auth.router)
+-# app.include_router(users.router)
+-# app.include_router(tasks.router)
++# Include routers
++app.include_router(tasks.router)
+ 
+ if __name__ == "__main__":
+     import uvicorn
+ 
+
+[0m
+[0m# [0mTodos
+[x] Create backend task CRUD router with AI classification
+[x] Update schemas to match database model
+[x] Integrate task router into main.py
+[x] Create frontend API service for tasks
+[ ] Build TaskForm component for natural language + manual input
+[ ] Create Tasks page with list and form
+[ ] Add tests for task endpoints
+[ ] Update TASKS.md and README.md
+[0m
+Now let's create the frontend API service and components. First, create the API service:
+[0m← [0mWrite frontend/src/services/taskApi.ts
+Wrote file successfully.
+[0m
+[0m← [0mWrite frontend/src/components/TaskForm.tsx
+Wrote file successfully.
+[0m
+Now create the TaskForm component that supports both natural language and manual input:
+[0m# [0mTodos
+[x] Create backend task CRUD router with AI classification
+[x] Update schemas to match database model
+[x] Integrate task router into main.py
+[x] Create frontend API service for tasks
+[x] Build TaskForm component for natural language + manual input
+[x] Create Tasks page with list and form
+[ ] Add tests for task endpoints
+[ ] Update TASKS.md and README.md
+[0m
+Now create the Tasks page that displays the task list and form:
+[0m← [0mWrite frontend/src/pages/TasksPage.tsx
+Wrote file successfully.
+[0m
+[0m→ [0mRead tests/unit/test_classifier.py
+Let me check the existing test patterns and write tests:
+Let me check for test infrastructure:
+[0m→ [0mRead tests/unit/test_engine.py[90m [limit=50][0m
+[0m✱ [0mGlob "**/conftest.py"[90m 0 matches[0m
+📝 Log saved: logs/iteration-47.md
+📊 Token Usage: 4500 / Session: 9000 / 64000
