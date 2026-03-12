@@ -1164,3 +1164,53 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/README.md
 Now let's update README status line to reflect progress:
 📝 Log saved: logs/iteration-48.md
 📊 Token Usage: 12750 / Session: 21750 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   914f318..7bbe7a2  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/16 completed, 6 remaining
+   Next task: **Add authentication & user isolation**: Integrate JWT auth ...
+📍 Iteration 49 at Thu Mar 12 07:15:29 PM EDT 2026...
+🤖 OpenCode processing: **Add authentication & user isolation**: Integrate JWT auth with OAuth2 password flow in FastAPI. Secure all endpoints. Build login/register pages. Ensure tasks are scoped to user ID.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll start by exploring the current project structure to understand what exists and then implement authentication & user isolation.
+[0m✱ [0mGlob "**/*.py"[90m 30 matches[0m
+[0m✱ [0mGlob "**/requirements*.txt"[90m 1 match[0m
+[0m✱ [0mGlob "**/*.js"[90m 3 matches[0m
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead backend/main.py
+[0m→ [0mRead backend/models/user.py
+[0m→ [0mRead backend/routers/tasks.py
+[0m→ [0mRead backend/config.py
+[0m→ [0mRead shared/schemas.py
+[0m→ [0mRead backend/database/__init__.py
+[0m✱ [0mGlob "backend/**/*.py"[90m 20 matches[0m
+[0m→ [0mRead requirements.txt
+[0m✱ [0mGlob "frontend/src/**/*.jsx"[90m 0 matches[0m
+[0m✱ [0mGlob "frontend/src/**/*"[90m 13 matches[0m
+[0m
+[0m$ [0mfind /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend -type f -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | head -20
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/tailwind.config.js
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/pages/TasksPage.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TaskForm.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/index.ts
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TimelineView.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/QuadrantBoard.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/ChainVisualizer.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TaskCard.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/services/taskApi.ts
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/__tests__/components/TimelineView.test.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/__tests__/components/QuadrantBoard.test.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/__tests__/components/ChainVisualizer.test.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/__tests__/components/TaskCard.test.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/types/index.ts
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/postcss.config.js
+[0m
+[0m✱ [0mGlob "frontend/package.json"[90m 1 match[0m
+[0m→ [0mRead frontend/src/services/taskApi.ts
+[0m→ [0mRead frontend/src/pages/TasksPage.tsx
+[0m→ [0mRead frontend/src/types/index.ts
+📝 Log saved: logs/iteration-49.md
+📊 Token Usage: 3250 / Session: 25000 / 64000
