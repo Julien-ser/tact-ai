@@ -1,0 +1,10 @@
+[
+  {
+    "num_tasks": 5,
+    "num_days": 2,
+    "time_limit_seconds": 5.0,
+    "status": "failed",
+    "error": "No feasible schedule found",
+    "error_type": "InfeasibleScheduleError"
+  }
+]

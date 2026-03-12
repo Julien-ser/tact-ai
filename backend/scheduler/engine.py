@@ -12,6 +12,7 @@ import itertools
 from ortools.sat.python import cp_model
 
 from .dependency import TaskNode
+from .conflicts import ConflictDetector
 
 
 # Priority mapping to numeric weights (higher number = higher priority)
@@ -104,9 +105,6 @@ class TaskScheduler:
 
     def _build_dependency_graph(self) -> None:
         """Build dependency resolver from tasks_data."""
-        self.resolver = TaskNode(self.start_date)  # Actually need to use proper class
-
-        # Use the existing DependencyResolver pattern
         from backend.scheduler.dependency import DependencyResolver
 
         self.resolver = DependencyResolver()
@@ -121,16 +119,21 @@ class TaskScheduler:
         for task in self.tasks_data:
             task_id = task["id"]
             for dep_id in task.get("dependencies", []):
-                self.resolver.add_dependency(task_id, dep_id)
+                try:
+                    self.resolver.add_dependency(task_id, dep_id)
+                except KeyError as e:
+                    raise ValueError(f"Dependency task {dep_id} not found") from e
 
     def _compute_available_slots(self) -> List[Tuple[int, int]]:
         """Compute available time slots within the planning horizon.
 
         Returns:
             List of (start_minute, end_minute) tuples representing available slots
+            measured in minutes from self.start_date.
         """
         slots = []
-        current_day = 0
+        # Offset of start_date within its day (minutes from midnight)
+        start_offset = self.start_date.hour * 60 + self.start_date.minute
         total_days = (self.horizon_minutes + 1439) // 1440  # ceil division
 
         for day_offset in range(total_days):
@@ -149,15 +152,23 @@ class TaskScheduler:
                 )
                 end_minutes = block["end_time"].hour * 60 + block["end_time"].minute
 
-                # Convert to absolute minutes from planning horizon start
+                # Convert to absolute minutes from midnight of the first day
                 absolute_start = day_offset * 1440 + start_minutes
                 absolute_end = day_offset * 1440 + end_minutes
 
-                # Clamp to horizon bounds
-                if absolute_start < self.horizon_minutes:
-                    absolute_end = min(absolute_end, self.horizon_minutes)
-                    if absolute_end > absolute_start:
-                        slots.append((absolute_start, absolute_end))
+                # Convert to relative minutes from self.start_date by subtracting start_offset
+                relative_start = absolute_start - start_offset
+                relative_end = absolute_end - start_offset
+
+                # Clamp to planning horizon [0, horizon_minutes]
+                if relative_end <= 0 or relative_start >= self.horizon_minutes:
+                    # Slot completely outside horizon
+                    continue
+                clamped_start = max(relative_start, 0)
+                clamped_end = min(relative_end, self.horizon_minutes)
+
+                if clamped_end > clamped_start:
+                    slots.append((clamped_start, clamped_end))
 
         # Merge overlapping slots (can happen if multiple blocks overlap)
         if not slots:
@@ -253,15 +264,6 @@ class TaskScheduler:
                     self.model.Add(
                         self.task_vars[task_id] > slot_end - task_duration
                     ).OnlyEnforceIf(in_slot.Not())
-                else:
-                    # Task cannot fit in this slot at all
-                    in_slot = self.model.NewBoolVar(
-                        f"task_{task_id}_in_slot_{slot_idx}_impossible"
-                    )
-                    self.model.Add(in_slot == 0)  # Force to false
-                    task_in_slot[task_id].append(
-                        (in_slot, slot_idx, slot_start, slot_end)
-                    )
 
             # Each task must be assigned to exactly one slot (since it must be scheduled exactly once)
             bool_vars = [item[0] for item in task_in_slot[task_id]]
@@ -296,12 +298,12 @@ class TaskScheduler:
 
     def _create_objective(self) -> None:
         """Create objective function to minimize weighted completion time and tardiness."""
-        # Priority weights: higher priority = smaller weight (to schedule earlier)
+        # Priority weights: higher priority = higher weight (to penalize delays more)
         priority_weights = {
-            "low": 4,
-            "medium": 3,
-            "high": 2,
-            "critical": 1,
+            "critical": 4,
+            "high": 3,
+            "medium": 2,
+            "low": 1,
         }
 
         weighted_completion_terms = []
@@ -388,11 +390,11 @@ class TaskScheduler:
 
         status = solver.Solve(self.model)
 
-        if status == cp_model.INFEASIBLE or status == cp_model.MODEL_INVALID:
+        if status in (cp_model.INFEASIBLE, cp_model.MODEL_INVALID):
             raise InfeasibleScheduleError("No feasible schedule found")
-        elif status in (cp_model.UNKNOWN, cp_model.ERROR):
+        elif status == cp_model.UNKNOWN:
             raise SchedulingError(
-                f"Solver failed with status: {solver.StatusName(status)}"
+                f"Solver stopped without finding a solution (status: {solver.StatusName(status)})"
             )
 
         # Extract solution
@@ -452,30 +454,39 @@ class TaskScheduler:
         return schedule_list
 
     def get_conflicts(self) -> List[Dict[str, Any]]:
-        """Get list of conflicts in the schedule (post-solve analysis).
+        """Get list of conflicts in the schedule.
 
-        Currently returns tasks that missed their due dates.
+        Detects:
+        - Overlapping tasks
+        - Resource over-allocation (tasks outside working hours)
+        - Missed deadlines (tasks ending after due date)
 
         Returns:
-            List of conflict dictionaries
+            List of conflict dictionaries sorted by severity.
         """
         if self.solution is None:
             return []
 
-        conflicts = []
+        # Convert solution to list format for conflict detector
+        scheduled_tasks = []
         for task_id, info in self.solution.items():
-            due_date = info.get("due_date")
-            if due_date and info["end"] > due_date:
-                conflicts.append(
-                    {
-                        "task_id": task_id,
-                        "title": info["title"],
-                        "type": "missed_deadline",
-                        "description": f"Task ends at {info['end']} but due at {due_date}",
-                        "end": info["end"],
-                        "due_date": due_date,
-                    }
-                )
+            scheduled_tasks.append(
+                {
+                    "task_id": info["task_id"],
+                    "title": info["title"],
+                    "start": info["start"],
+                    "end": info["end"],
+                    "duration": info["duration"],
+                    "due_date": info.get("due_date"),
+                }
+            )
+
+        # Detect conflicts using ConflictDetector
+        detector = ConflictDetector(
+            scheduled_tasks=scheduled_tasks,
+            time_blocks=self.time_blocks,
+        )
+        conflicts = detector.detect_all_conflicts()
 
         return conflicts
 

@@ -243,4 +243,4 @@ For issues, feature requests, or questions, please open an issue on GitHub or co
 
 ---
 
-**Status**: In active development - Phase 2: Core AI & Scheduling Engine (Dependency Resolver Complete)
+**Status**: In active development - Phase 2: Core AI & Scheduling Engine (AI Scheduling Engine Complete)
