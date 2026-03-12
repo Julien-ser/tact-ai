@@ -140,7 +140,7 @@ class DependencyResolver:
                 elif neighbor in rec_stack:
                     # Found a cycle, extract it from the path
                     cycle_start = path.index(neighbor)
-                    return path[cycle_start:] + [neighbor]
+                    return path[cycle_start:]
 
             path.pop()
             rec_stack.remove(node_id)
@@ -213,9 +213,14 @@ class DependencyResolver:
 
         Returns:
             Slack time as timedelta, or None if no due date
+
+        Raises:
+            AttributeError: If earliest times have not been computed
         """
         task = self.tasks[task_id]
-        if task.due_date and task.earliest_finish:
+        if task.due_date:
+            if task.earliest_finish is None:
+                raise AttributeError("Earliest finish time not computed")
             slack = task.due_date - task.earliest_finish
             return max(slack, timedelta(0))
         return None
