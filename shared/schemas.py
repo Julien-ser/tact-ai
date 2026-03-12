@@ -1,16 +1,21 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
+from enum import Enum
 
 
-class Quadrant(str):
+class Quadrant(str, Enum):
+    """Eisenhower quadrant enum"""
+
     Q1 = "Q1"  # Urgent & Important
     Q2 = "Q2"  # Not Urgent & Important
     Q3 = "Q3"  # Urgent & Not Important
     Q4 = "Q4"  # Not Urgent & Not Important
 
 
-class Priority(str):
+class Priority(str, Enum):
+    """Task priority enum"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -27,7 +32,7 @@ class TaskBase(BaseModel):
 
 
 class TaskCreate(TaskBase):
-    pass
+    quadrant: Optional[Quadrant] = None
 
 
 class TaskUpdate(BaseModel):

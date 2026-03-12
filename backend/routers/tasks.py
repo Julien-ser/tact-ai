@@ -88,7 +88,17 @@ async def create_task(
             task_title=task_data.title,
             task_description=task_data.description,
         )
-        quadrant_value = Quadrant(classification.quadrant.upper())
+        # Map classifier output (descriptive) to Quadrant enum (Q1-Q4)
+        quadrant_mapping = {
+            EisenhowerQuadrantClassifier.IMPORTANT_URGENT: Quadrant.Q1,
+            EisenhowerQuadrantClassifier.IMPORTANT_NOT_URGENT: Quadrant.Q2,
+            EisenhowerQuadrantClassifier.NOT_IMPORTANT_URGENT: Quadrant.Q3,
+            EisenhowerQuadrantClassifier.NOT_IMPORTANT_NOT_URGENT: Quadrant.Q4,
+        }
+        quadrant_value = quadrant_mapping.get(
+            classification.quadrant,
+            Quadrant.Q2,  # Default to Q2 if unknown
+        )
 
     # Create task
     db_task = TaskModel(

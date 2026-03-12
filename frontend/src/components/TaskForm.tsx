@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { TaskCreate, Priority, Quadrant } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Task, TaskCreate, Priority, Quadrant } from '../types';
 import taskApi from '../services/taskApi';
 
 interface TaskFormProps {
+  task?: Task;
   onTaskCreated?: (task: any) => void;
   onCancel?: () => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) => {
-  const [mode, setMode] = useState<'natural' | 'manual'>('natural');
+const TaskForm: React.FC<TaskFormProps> = ({ task, onTaskCreated, onCancel }) => {
+  const [mode, setMode] = useState<'natural' | 'manual'>('manual');
   const [naturalInput, setNaturalInput] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -17,6 +18,26 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) => {
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Populate form when editing a task
+  useEffect(() => {
+    if (task) {
+      setMode('manual');
+      setTitle(task.title);
+      setDescription(task.description || '');
+      setPriority(task.priority);
+      setEstimatedDuration(task.estimated_duration || 60);
+      setDueDate(task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : '');
+    } else {
+      setMode('natural');
+      setNaturalInput('');
+      setTitle('');
+      setDescription('');
+      setPriority(Priority.MEDIUM);
+      setEstimatedDuration(60);
+      setDueDate('');
+    }
+  }, [task]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,18 +74,27 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) => {
         };
       }
 
-      const createdTask = await taskApi.create(taskData);
-      onTaskCreated?.(createdTask);
+      if (task) {
+        // Editing mode
+        const updatedTask = await taskApi.update(task.id, taskData);
+        onTaskCreated?.(updatedTask);
+      } else {
+        // Creation mode
+        const createdTask = await taskApi.create(taskData);
+        onTaskCreated?.(createdTask);
+      }
 
-      // Reset form
-      setNaturalInput('');
-      setTitle('');
-      setDescription('');
-      setPriority(Priority.MEDIUM);
-      setEstimatedDuration(60);
-      setDueDate('');
+      // Reset form only if not editing (editing modal will be closed by parent)
+      if (!task) {
+        setNaturalInput('');
+        setTitle('');
+        setDescription('');
+        setPriority(Priority.MEDIUM);
+        setEstimatedDuration(60);
+        setDueDate('');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to create task');
+      setError(err.message || (task ? 'Failed to update task' : 'Failed to create task'));
     } finally {
       setIsSubmitting(false);
     }
@@ -215,7 +245,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) => {
             disabled={isSubmitting}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            {isSubmitting ? 'Creating...' : 'Create Task'}
+            {isSubmitting 
+              ? (task ? 'Updating...' : 'Creating...')
+              : (task ? 'Update Task' : 'Create Task')
+            }
           </button>
         </div>
       </form>

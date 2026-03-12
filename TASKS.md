@@ -15,7 +15,7 @@
 
 ## Phase 3: User Interface & Task Management
 - [x] **Construct React component library**: Build `frontend/components/` with `TaskCard`, `QuadrantBoard` (drag-and-drop), `TimelineView` (d3.js Gantt), and `ChainVisualizer`. Apply Tailwind CSS styling.
-- [ ] **Implement full task CRUD**: Create FastAPI REST endpoints for tasks (with AI classification on create). Build React forms for natural language input and manual editing. Add API integration in frontend.
+- [x] **Implement full task CRUD**: Create FastAPI REST endpoints for tasks (with AI classification on create). Build React forms for natural language input and manual editing. Add API integration in frontend.
 - [ ] **Add authentication & user isolation**: Integrate JWT auth with OAuth2 password flow in FastAPI. Secure all endpoints. Build login/register pages. Ensure tasks are scoped to user ID.
 - [ ] **Develop real-time updates (optional)**: Add FastAPI WebSocket endpoint and React Socket.IO client to push schedule changes and conflict alerts to connected users.
 

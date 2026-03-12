@@ -17,7 +17,7 @@ const TasksPage: React.FC = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [filter]); // Refetch when filter changes
 
   const fetchTasks = async () => {
     try {
@@ -127,6 +127,23 @@ const TasksPage: React.FC = () => {
         </select>
 
         <select
+          value={filter.priority || ''}
+          onChange={(e) =>
+            setFilter((prev) => ({
+              ...prev,
+              priority: (e.target.value as Priority) || undefined,
+            }))
+          }
+          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+        >
+          <option value="">All Priorities</option>
+          <option value={Priority.LOW}>Low</option>
+          <option value={Priority.MEDIUM}>Medium</option>
+          <option value={Priority.HIGH}>High</option>
+          <option value={Priority.CRITICAL}>Critical</option>
+        </select>
+
+        <select
           value={filter.completed === undefined ? '' : filter.completed.toString()}
           onChange={(e) =>
             setFilter((prev) => ({
@@ -202,6 +219,7 @@ const TasksPage: React.FC = () => {
               </button>
             </div>
             <TaskForm
+              task={editingTask}
               onTaskCreated={(task) => {
                 setEditingTask(null);
                 fetchTasks();
