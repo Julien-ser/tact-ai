@@ -61,6 +61,21 @@ services:
       timeout: 10s
       retries: 3
 
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: tact-ai-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/build
+
 volumes:
   postgres_data:
   redis_data:
