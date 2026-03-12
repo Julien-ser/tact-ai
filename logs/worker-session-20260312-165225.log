@@ -1065,3 +1065,71 @@ Good, I can see models are already created. Let me check the existing models and
 [0m→ [0mRead backend/models/timeline_task.py
 📝 Log saved: logs/iteration-11.md
 📊 Token Usage: 3000 / Session: 38000 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   1c86a8d..39a58ad  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 3/16 completed, 13 remaining
+   Next task: **Design and implement database schema**: Write Alembic migr...
+📍 Iteration 12 at Thu Mar 12 05:02:46 PM EDT 2026...
+✓ Progress: Git commit found
+📊 Task attempt 7: Progress detected, continuing...
+📚 Loading context from previous iteration attempts...
+🤖 OpenCode processing: **Design and implement database schema**: Write Alembic migrations for tables: `users`, `tasks`, `task_chains`, `timelines`, `time_blocks`. Create ER diagram in `docs/database.md`.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll start by examining the current project structure and files to understand what's already in place for the database schema implementation.
+[0m→ [0mRead .
+[0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mfind /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai -type f -name "*.py" -o -name "*.sql" -o -name "*.yml" -o -name "*.yaml" -o -name "*.toml" | head -30
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/docker-compose.yml
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/shared/schemas.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/database/__init__.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/config.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/task.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/__init__.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/timeline_task.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/timeline.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/time_block.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/user.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/models/task_chain.py
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/.pre-commit-config.yaml
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/.github/workflows/ci.yml
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/pyproject.toml
+[0m
+Let me examine the existing database models and configuration to understand what's already implemented:
+[0m→ [0mRead backend/models/__init__.py
+[0m→ [0mRead backend/models/user.py
+[0m→ [0mRead backend/models/task.py
+[0m→ [0mRead backend/models/task_chain.py
+[0m→ [0mRead backend/models/time_block.py
+[0m→ [0mRead backend/models/timeline.py
+[0m→ [0mRead backend/database/__init__.py
+[0m→ [0mRead backend/models/timeline_task.py
+Now let me check the backend directory structure and see if Alembic is already set up:
+[0m→ [0mRead requirements.txt
+[0m→ [0mRead pyproject.toml
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/
+total 40
+drwxr-xr-x  8 julien julien 4096 Mar 12 16:54 .
+drwxr-xr-x 12 julien julien 4096 Mar 12 16:56 ..
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 ai
+-rw-r--r--  1 julien julien  644 Mar 12 16:53 config.py
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 core
+drwxr-xr-x  2 julien julien 4096 Mar 12 17:00 database
+-rw-r--r--  1 julien julien  929 Mar 12 16:54 main.py
+drwxr-xr-x  2 julien julien 4096 Mar 12 17:01 models
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 routers
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 scheduler
+[0m
+Let me check the config file and see if there's an alembic directory:
+[0m→ [0mRead docs
+[0m
+[0m$ [0mfind /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend -name "alembic*" -o -name "migrations" 2>/dev/null
+[0m→ [0mRead backend/config.py
+📝 Log saved: logs/iteration-12.md
+📊 Token Usage: 3250 / Session: 41250 / 64000
