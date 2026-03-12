@@ -1291,3 +1291,103 @@ Let me check the types definition and the App component structure:
 [0m✱ [0mGlob "frontend/src/App.*"[90m 0 matches[0m
 📝 Log saved: logs/iteration-50.md
 📊 Token Usage: 3250 / Session: 28250 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   dae1864..c7f06ff  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/16 completed, 6 remaining
+   Next task: **Add authentication & user isolation**: Integrate JWT auth ...
+📍 Iteration 51 at Thu Mar 12 07:16:56 PM EDT 2026...
+✓ Progress: Git commit found
+📊 Task attempt 3: Progress detected, continuing...
+📚 Loading context from previous iteration attempts...
+🤖 OpenCode processing: **Add authentication & user isolation**: Integrate JWT auth with OAuth2 password flow in FastAPI. Secure all endpoints. Build login/register pages. Ensure tasks are scoped to user ID.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+[0m→ [0mRead backend
+[0m✱ [0mGlob "**/main.py"[90m 1 match[0m
+[0m✱ [0mGlob "**/models.py"[90m 0 matches[0m
+I'll complete the authentication & user isolation task. Let me first explore the project structure to understand the current state.
+[0m
+[0m$ [0mfind . -type f -name "*.py" -o -name "*.tsx" -o -name "*.ts" | head -30
+./shared/schemas.py
+./backend/__init__.py
+./backend/main.py
+./backend/database/__init__.py
+./backend/alembic/versions/20260312_000001_initial_schema.py
+./backend/alembic/env.py
+./backend/config.py
+./backend/scheduler/__init__.py
+./backend/scheduler/dependency.py
+./backend/scheduler/conflicts.py
+./backend/scheduler/engine.py
+./backend/routers/tasks.py
+./backend/ai/classifier.py
+./backend/ai/__init__.py
+./backend/models/task.py
+./backend/models/__init__.py
+./backend/models/timeline_task.py
+./backend/models/timeline.py
+./backend/models/time_block.py
+./backend/models/user.py
+./backend/models/task_chain.py
+./benchmark/scheduler_benchmark.py
+./frontend/src/pages/TasksPage.tsx
+./frontend/src/components/TaskForm.tsx
+./frontend/src/components/index.ts
+./frontend/src/components/TimelineView.tsx
+./frontend/src/components/QuadrantBoard.tsx
+./frontend/src/components/ChainVisualizer.tsx
+./frontend/src/components/TaskCard.tsx
+./frontend/src/services/taskApi.ts
+[0m
+[0m→ [0mRead backend/main.py
+[0m→ [0mRead backend/models/user.py
+[0m→ [0mRead backend/config.py
+[0m→ [0mRead backend/routers/tasks.py
+[0m→ [0mRead shared/schemas.py
+[0m→ [0mRead backend/database/__init__.py
+[0m✱ [0mGlob "frontend/src/**/*.tsx"[90m 10 matches[0m
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/App.tsx
+[0m✱ [0mGlob "frontend/src/**/index.tsx"[90m 0 matches[0m
+[0m✱ [0mGlob "frontend/src/**/*App*"[90m 0 matches[0m
+[0m→ [0mRead frontend/src
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/
+total 32
+drwxr-xr-x 8 julien julien 4096 Mar 12 19:05 .
+drwxr-xr-x 4 julien julien 4096 Mar 12 16:54 ..
+drwxr-xr-x 2 julien julien 4096 Mar 12 19:08 components
+drwxr-xr-x 2 julien julien 4096 Mar 12 18:04 hooks
+drwxr-xr-x 2 julien julien 4096 Mar 12 19:08 pages
+drwxr-xr-x 2 julien julien 4096 Mar 12 19:07 services
+drwxr-xr-x 3 julien julien 4096 Mar 12 19:05 __tests__
+drwxr-xr-x 2 julien julien 4096 Mar 12 18:04 types
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/pages/
+total 16
+drwxr-xr-x 2 julien julien 4096 Mar 12 19:08 .
+drwxr-xr-x 8 julien julien 4096 Mar 12 19:05 ..
+-rw-r--r-- 1 julien julien 7461 Mar 12 19:12 TasksPage.tsx
+[0m
+[0m$ [0mfind /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend -name "main.tsx" -o -name "index.tsx" | head -5
+[0m→ [0mRead frontend/package.json
+[0m
+[0m$ [0mfind /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src -name "*.tsx" | grep -v test | head -20
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/pages/TasksPage.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TaskForm.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TimelineView.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/QuadrantBoard.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/ChainVisualizer.tsx
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/components/TaskCard.tsx
+[0m
+[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/frontend/src/services/
+total 12
+drwxr-xr-x 2 julien julien 4096 Mar 12 19:07 .
+drwxr-xr-x 8 julien julien 4096 Mar 12 19:05 ..
+-rw-r--r-- 1 julien julien 2897 Mar 12 19:07 taskApi.ts
+[0m
+📝 Log saved: logs/iteration-51.md
+📊 Token Usage: 3500 / Session: 31750 / 64000
