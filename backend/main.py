@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from .routers import tasks
-from .auth import router as auth_router
+from .auth.router import router as auth_router
 
 app = FastAPI(
     title="Tact AI",

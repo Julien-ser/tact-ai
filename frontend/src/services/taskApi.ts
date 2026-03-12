@@ -6,7 +6,20 @@
 
 import { Task, TaskCreate, TaskUpdate } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'localhost:8000';
+
+
+// Helper to get auth token
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('access_token');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
 
 /**
  * API client for tasks
@@ -23,6 +36,7 @@ export const taskApi = {
     const response = await fetch(
       `${API_BASE_URL}/tasks/?${params.toString()}`,
       {
+        headers: getAuthHeaders(),
         credentials: 'include',
       }
     );
@@ -39,6 +53,7 @@ export const taskApi = {
    */
   async getById(taskId: number): Promise<Task> {
     const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
     
@@ -58,10 +73,7 @@ export const taskApi = {
   async create(taskData: TaskCreate): Promise<Task> {
     const response = await fetch(`${API_BASE_URL}/tasks/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      headers: getAuthHeaders(),
       body: JSON.stringify(taskData),
     });
     
@@ -79,10 +91,7 @@ export const taskApi = {
   async update(taskId: number, taskData: TaskUpdate): Promise<Task> {
     const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      headers: getAuthHeaders(),
       body: JSON.stringify(taskData),
     });
     
@@ -100,7 +109,7 @@ export const taskApi = {
   async delete(taskId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
       method: 'DELETE',
-      credentials: 'include',
+      headers: getAuthHeaders(),
     });
     
     if (!response.ok) {

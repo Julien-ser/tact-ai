@@ -4,6 +4,29 @@ export type Priority = 'low' | 'medium' | 'high' | 'critical';
 
 export type RelationshipType = 'depends_on' | 'blocks' | 'relates_to';
 
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  created_at: string;
+}
+
+export interface Token {
+  access_token: string;
+  token_type: string;
+}
+
+export interface UserCreate {
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface UserLogin {
+  email: string;
+  password: string;
+}
+
 export interface Task {
   id: number;
   user_id: number;
