@@ -248,43 +248,47 @@ Respond with JSON only."""
             "inform",
         ]
 
-        # Score each quadrant
-        scores = {
-            self.IMPORTANT_URGENT: 0,
-            self.IMPORTANT_NOT_URGENT: 0,
-            self.NOT_IMPORTANT_URGENT: 0,
-            self.NOT_IMPORTANT_NOT_URGENT: 0,
+        # Track matched keywords for each quadrant
+        matched_keywords = {
+            self.IMPORTANT_URGENT: [],
+            self.IMPORTANT_NOT_URGENT: [],
+            self.NOT_IMPORTANT_URGENT: [],
+            self.NOT_IMPORTANT_NOT_URGENT: [],
         }
 
-        # Check for keyword matches
+        # Score each quadrant and track keywords
         for keyword in urgent_important_keywords:
             if keyword in text:
-                scores[self.IMPORTANT_URGENT] += 1
+                matched_keywords[self.IMPORTANT_URGENT].append(keyword)
 
         for keyword in important_not_urgent_keywords:
             if keyword in text:
-                scores[self.IMPORTANT_NOT_URGENT] += 1
+                matched_keywords[self.IMPORTANT_NOT_URGENT].append(keyword)
 
         for keyword in not_important_urgent_keywords:
             if keyword in text:
-                scores[self.NOT_IMPORTANT_URGENT] += 1
+                matched_keywords[self.NOT_IMPORTANT_URGENT].append(keyword)
 
         # Check for explicit not important/not urgent markers
-        if any(
-            term in text
-            for term in [
-                "waste",
-                "trivial",
-                "busy work",
-                "time waster",
-                "entertainment",
-                "social media",
-                "tv",
-                "netflix",
-                "youtube",
-            ]
-        ):
-            scores[self.NOT_IMPORTANT_NOT_URGENT] += 3
+        not_important_keywords = [
+            "waste",
+            "trivial",
+            "busy work",
+            "time waster",
+            "entertainment",
+            "social media",
+            "tv",
+            "netflix",
+            "youtube",
+        ]
+        for term in not_important_keywords:
+            if term in text:
+                matched_keywords[self.NOT_IMPORTANT_NOT_URGENT].append(term)
+
+        # Calculate scores from matched keywords
+        scores = {
+            quadrant: len(keywords) for quadrant, keywords in matched_keywords.items()
+        }
 
         # Determine quadrant (default to not important not urgent if all scores are 0)
         max_score = max(scores.values())
@@ -292,7 +296,8 @@ Respond with JSON only."""
             quadrant = self.NOT_IMPORTANT_NOT_URGENT
             confidence = 0.3
         else:
-            quadrant = max(scores, key=scores.get)
+            # Get quadrant with highest score
+            quadrant, max_q_score = max(scores.items(), key=lambda x: x[1])
             # Confidence based on score dominance
             second_max = sorted(scores.values())[-2] if len(scores) > 1 else 0
             if second_max == 0:
@@ -303,8 +308,8 @@ Respond with JSON only."""
         return QuadrantClassification(
             quadrant=quadrant,
             confidence=confidence,
-            reasoning=f"Keyword-based classification: {', '.join([k for k, v in scores.items() if v > 0])}",
-            keywords=[k for k, v in scores.items() if v > 0],
+            reasoning=f"Keyword-based classification: {', '.join(matched_keywords[quadrant])}",
+            keywords=matched_keywords[quadrant],
         )
 
     async def classify(

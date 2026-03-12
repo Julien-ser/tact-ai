@@ -282,7 +282,7 @@ class TestEisenhowerQuadrantClassifier:
     def test_fallback_classifier_default(self, classifier):
         """Test fallback classifier default when no keywords match"""
         result = classifier._classify_with_keywords(
-            "Task without clear keywords", "Ambiguous description"
+            "Arbitrary item", "No specific keywords or phrases"
         )
         assert result.quadrant == NOT_IMPORTANT_NOT_URGENT
         assert result.confidence == 0.3

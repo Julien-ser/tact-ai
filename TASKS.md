@@ -8,7 +8,7 @@
 - [x] **Design and implement database schema**: Write Alembic migrations for tables: `users`, `tasks`, `task_chains`, `timelines`, `time_blocks`. Create ER diagram in `docs/database.md`.
 
 ## Phase 2: Core AI & Scheduling Engine
-- [ ] **Build Eisenhower quadrant classifier**: Implement `backend/ai/classifier.py` using OpenAI GPT-4 with structured prompts. Add Redis caching layer and a fallback keyword-based classifier. Write unit tests with example tasks.
+- [x] **Build Eisenhower quadrant classifier**: Implement `backend/ai/classifier.py` using OpenAI GPT-4 with structured prompts. Add Redis caching layer and a fallback keyword-based classifier. Write unit tests with example tasks.
 - [ ] **Develop task chain resolver**: Create `backend/scheduler/dependency.py` to handle task chains via topological sort, detect cycles, and compute earliest start times. Include test cases for complex chains.
 - [ ] **Implement AI scheduling engine**: Use ortools CP-SAT to generate daily/weekly schedules respecting deadlines, dependencies, priorities, and working hours. Output JSON with start/end timestamps. Add benchmark script.
 - [ ] **Create conflict detection module**: Build `backend/scheduler/conflicts.py` to identify overlapping tasks, resource over-allocation, and missed deadlines. Return actionable conflict reports for frontend display.
