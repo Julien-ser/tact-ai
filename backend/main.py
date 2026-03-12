@@ -4,6 +4,8 @@ from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from .routers import tasks
 from .auth.router import router as auth_router
+from .websocket.manager import manager
+from .websocket.router import router as websocket_router, set_connection_manager
 
 app = FastAPI(
     title="Tact AI",
@@ -20,6 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Set up WebSocket connection manager
+set_connection_manager(manager)
+
 
 # Health check
 @app.get("/health")
@@ -30,6 +35,7 @@ async def health_check():
 # Include routers
 app.include_router(auth_router)
 app.include_router(tasks.router)
+app.include_router(websocket_router)
 
 if __name__ == "__main__":
     import uvicorn

@@ -4,6 +4,7 @@ Tasks CRUD Router
 Provides REST endpoints for task management with AI-powered classification.
 """
 
+import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -14,6 +15,20 @@ from backend.models.task import Task as TaskModel
 from backend.models.user import User as UserModel
 from backend.ai.classifier import EisenhowerQuadrantClassifier
 from backend.auth.utils import get_current_user
+from backend.websocket import (
+    broadcast_task_created,
+    broadcast_task_updated,
+    broadcast_task_deleted,
+)
+from shared.schemas import (
+    TaskCreate,
+    TaskUpdate,
+    TaskResponse,
+    Quadrant,
+    Priority,
+)
+
+logger = logging.getLogger(__name__)
 from shared.schemas import (
     TaskCreate,
     TaskUpdate,
@@ -115,6 +130,26 @@ async def create_task(
     db.commit()
     db.refresh(db_task)
 
+    # Broadcast task creation to user via WebSocket
+    try:
+        task_data = {
+            "id": db_task.id,
+            "title": db_task.title,
+            "description": db_task.description,
+            "quadrant": db_task.quadrant,
+            "priority": db_task.priority,
+            "estimated_duration": db_task.estimated_duration,
+            "due_date": db_task.due_date.isoformat() if db_task.due_date else None,
+            "completed": db_task.completed,
+            "created_at": db_task.created_at.isoformat(),
+            "updated_at": db_task.updated_at.isoformat()
+            if db_task.updated_at
+            else None,
+        }
+        await broadcast_task_created(manager, task_data, user_id)
+    except Exception as e:
+        logger.error(f"Failed to broadcast task creation: {e}")
+
     return db_task
 
 
@@ -193,6 +228,24 @@ async def update_task(
     db.commit()
     db.refresh(task)
 
+    # Broadcast task update to user via WebSocket
+    try:
+        task_data = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "quadrant": task.quadrant,
+            "priority": task.priority,
+            "estimated_duration": task.estimated_duration,
+            "due_date": task.due_date.isoformat() if task.due_date else None,
+            "completed": task.completed,
+            "created_at": task.created_at.isoformat(),
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+        }
+        await broadcast_task_updated(manager, task_data, user_id)
+    except Exception as e:
+        logger.error(f"Failed to broadcast task update: {e}")
+
     return task
 
 
@@ -223,5 +276,11 @@ async def delete_task(
 
     db.delete(task)
     db.commit()
+
+    # Broadcast task deletion to user via WebSocket
+    try:
+        await broadcast_task_deleted(manager, task_id, user_id)
+    except Exception as e:
+        logger.error(f"Failed to broadcast task deletion: {e}")
 
     return None
