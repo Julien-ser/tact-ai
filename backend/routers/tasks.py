@@ -13,6 +13,7 @@ from backend.database import get_db
 from backend.models.task import Task as TaskModel
 from backend.models.user import User as UserModel
 from backend.ai.classifier import EisenhowerQuadrantClassifier
+from backend.auth.utils import get_current_user
 from shared.schemas import (
     TaskCreate,
     TaskUpdate,
@@ -24,16 +25,11 @@ from shared.schemas import (
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-# Placeholder: In production, this would come from JWT auth
-def get_current_user_id() -> int:
-    """Temporary function to get user ID. Will be replaced with JWT auth."""
-    return 1  # Default user for development
-
-
 @router.get("/", response_model=List[TaskResponse])
 async def list_tasks(
     completed: Optional[bool] = Query(None, description="Filter by completion status"),
-    priority: Optional[Priority] = Query(None, description="Filter by priority"),
+    priority: Optional[Priority] = Query(None, description="Filter by priority level"),
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -42,12 +38,13 @@ async def list_tasks(
     Args:
         completed: Filter by completion status
         priority: Filter by priority level
+        current_user: Authenticated user
         db: Database session
 
     Returns:
         List of tasks belonging to the current user
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
 
     query = select(TaskModel).where(TaskModel.user_id == user_id)
 
@@ -64,6 +61,7 @@ async def list_tasks(
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task_data: TaskCreate,
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -73,12 +71,13 @@ async def create_task(
 
     Args:
         task_data: Task creation data (title, description, priority, etc.)
+        current_user: Authenticated user
         db: Database session
 
     Returns:
         Created task with AI-assigned quadrant
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
 
     # Determine quadrant using AI classifier if not provided
     quadrant_value = task_data.quadrant
@@ -122,6 +121,7 @@ async def create_task(
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: int,
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -129,12 +129,13 @@ async def get_task(
 
     Args:
         task_id: Task ID
+        current_user: Authenticated user
         db: Database session
 
     Returns:
         Task details
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
 
     task = db.execute(
         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)
@@ -152,6 +153,7 @@ async def get_task(
 async def update_task(
     task_id: int,
     task_update: TaskUpdate,
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -160,12 +162,13 @@ async def update_task(
     Args:
         task_id: Task ID to update
         task_update: Fields to update
+        current_user: Authenticated user
         db: Database session
 
     Returns:
         Updated task
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
 
     task = db.execute(
         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)
@@ -196,6 +199,7 @@ async def update_task(
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: int,
+    current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -203,9 +207,10 @@ async def delete_task(
 
     Args:
         task_id: Task ID to delete
+        current_user: Authenticated user
         db: Database session
     """
-    user_id = get_current_user_id()
+    user_id = current_user.id
 
     task = db.execute(
         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)

@@ -1391,3 +1391,290 @@ drwxr-xr-x 8 julien julien 4096 Mar 12 19:05 ..
 [0m
 📝 Log saved: logs/iteration-51.md
 📊 Token Usage: 3500 / Session: 31750 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   c7f06ff..b7b4474  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/16 completed, 6 remaining
+   Next task: **Add authentication & user isolation**: Integrate JWT auth ...
+📍 Iteration 52 at Thu Mar 12 07:17:40 PM EDT 2026...
+✓ Progress: Git commit found
+📊 Task attempt 4: Progress detected, continuing...
+📚 Loading context from previous iteration attempts...
+🤖 OpenCode processing: **Add authentication & user isolation**: Integrate JWT auth with OAuth2 password flow in FastAPI. Secure all endpoints. Build login/register pages. Ensure tasks are scoped to user ID.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll start by exploring the current project structure to understand what exists and then implement the authentication & user isolation feature.
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead README.md
+[0m✱ [0mGlob "**/*.py"[90m 30 matches[0m
+Let me examine the existing backend structure, models, and main application to understand what's already in place:
+[0m→ [0mRead backend/main.py
+[0m→ [0mRead backend/models/user.py
+[0m→ [0mRead backend/routers/tasks.py
+[0m→ [0mRead backend/config.py
+Let me also check the database setup and shared schemas:
+[0m→ [0mRead backend/database/__init__.py
+[0m→ [0mRead shared/schemas.py
+[0m✱ [0mGlob "frontend/src/**/*.jsx"[90m 0 matches[0m
+Let me find the frontend structure:
+[0m→ [0mRead frontend
+[0m✱ [0mGlob "frontend/**/*.jsx"[90m 0 matches[0m
+[0m✱ [0mGlob "frontend/**/*.tsx"[90m 10 matches[0m
+[0m
+[0m# [0mTodos
+[ ] Create auth utilities (password hashing, JWT token creation/verification)
+[ ] Create auth router with register and login endpoints
+[ ] Add get_current_user dependency for endpoint protection
+[ ] Update tasks router to use real authentication
+[ ] Add auth router to main.py
+[ ] Create login page in frontend
+[ ] Create register page in frontend
+[ ] Add auth context/provider for frontend state management
+[ ] Update frontend API service to include auth tokens
+[ ] Test authentication flow end-to-end
+[0m
+Let me create a todo list for this authentication task and start implementing:
+Now let's implement authentication. I'll start by creating the auth utilities:
+[0m$ [0mmkdir -p /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/auth
+[0m
+[0m← [0mWrite backend/auth/utils.py
+Wrote file successfully.
+[0m
+Now let's create the auth router with register and login endpoints:
+[0m← [0mWrite backend/auth/router.py
+Wrote file successfully.
+[0m
+Now let's update the tasks router to use the real authentication:
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -12,8 +12,9 @@
+ from backend.database import get_db
+ from backend.models.task import Task as TaskModel
+ from backend.models.user import User as UserModel
+ from backend.ai.classifier import EisenhowerQuadrantClassifier
++from backend.auth.utils import get_current_user
+ from shared.schemas import (
+     TaskCreate,
+     TaskUpdate,
+     TaskResponse,
+@@ -23,14 +24,8 @@
+ 
+ router = APIRouter(prefix="/tasks", tags=["tasks"])
+ 
+ 
+-# Placeholder: In production, this would come from JWT auth
+-def get_current_user_id() -> int:
+-    """Temporary function to get user ID. Will be replaced with JWT auth."""
+-    return 1  # Default user for development
+-
+-
+ @router.get("/", response_model=List[TaskResponse])
+ async def list_tasks(
+     completed: Optional[bool] = Query(None, description="Filter by completion status"),
+     priority: Optional[Priority] = Query(None, description="Filter by priority"),
+
+[0m
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -27,23 +27,25 @@
+ 
+ @router.get("/", response_model=List[TaskResponse])
+ async def list_tasks(
+     completed: Optional[bool] = Query(None, description="Filter by completion status"),
+-    priority: Optional[Priority] = Query(None, description="Filter by priority"),
++    priority: Optional[Priority] = Query(None, description="Filter by priority level"),
++    current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+     List tasks with optional filters.
+ 
+     Args:
+         completed: Filter by completion status
+         priority: Filter by priority level
++        current_user: Authenticated user
+         db: Database session
+ 
+     Returns:
+         List of tasks belonging to the current user
+     """
+-    user_id = get_current_user_id()
++    user_id = current_user.id
+ 
+     query = select(TaskModel).where(TaskModel.user_id == user_id)
+ 
+     if completed is not None:
+
+[0m
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -60,8 +60,9 @@
+ 
+ @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+ async def create_task(
+     task_data: TaskCreate,
++    current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+     Create a new task with AI-powered quadrant classification.
+@@ -69,14 +70,15 @@
+     If quadrant is not provided, the EisenhowerQuadrantClassifier will classify it.
+ 
+     Args:
+         task_data: Task creation data (title, description, priority, etc.)
++        current_user: Authenticated user
+         db: Database session
+ 
+     Returns:
+         Created task with AI-assigned quadrant
+     """
+-    user_id = get_current_user_id()
++    user_id = current_user.id
+ 
+     # Determine quadrant using AI classifier if not provided
+     quadrant_value = task_data.quadrant
+     if not quadrant_value:
+
+[0m
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -120,21 +120,23 @@
+ 
+ @router.get("/{task_id}", response_model=TaskResponse)
+ async def get_task(
+     task_id: int,
++    current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+     Get a specific task by ID.
+ 
+     Args:
+         task_id: Task ID
++        current_user: Authenticated user
+         db: Database session
+ 
+     Returns:
+         Task details
+     """
+-    user_id = get_current_user_id()
++    user_id = current_user.id
+ 
+     task = db.execute(
+         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)
+     ).scalar_one_or_none()
+
+[0m
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -152,22 +152,24 @@
+ @router.put("/{task_id}", response_model=TaskResponse)
+ async def update_task(
+     task_id: int,
+     task_update: TaskUpdate,
++    current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+     Update a task.
+ 
+     Args:
+         task_id: Task ID to update
+         task_update: Fields to update
++        current_user: Authenticated user
+         db: Database session
+ 
+     Returns:
+         Updated task
+     """
+-    user_id = get_current_user_id()
++    user_id = current_user.id
+ 
+     task = db.execute(
+         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)
+     ).scalar_one_or_none()
+
+[0m
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -198,18 +198,20 @@
+ 
+ @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+ async def delete_task(
+     task_id: int,
++    current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+     Delete a task.
+ 
+     Args:
+         task_id: Task ID to delete
++        current_user: Authenticated user
+         db: Database session
+     """
+-    user_id = get_current_user_id()
++    user_id = current_user.id
+ 
+     task = db.execute(
+         select(TaskModel).where(TaskModel.id == task_id, TaskModel.user_id == user_id)
+     ).scalar_one_or_none()
+
+[0m
+Now let's update main.py to include the auth router:
+[0m← [0mEdit backend/main.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/main.py
+@@ -2,8 +2,9 @@
+ from fastapi.middleware.cors import CORSMiddleware
+ from fastapi.security import OAuth2PasswordBearer
+ from .config import settings
+ from .routers import tasks
++from .auth import router as auth_router
+ 
+ app = FastAPI(
+     title="Tact AI",
+     description="AI-based scheduler using Eisenhower matrix",
+@@ -26,8 +27,9 @@
+     return {"status": "healthy", "environment": settings.ENVIRONMENT}
+ 
+ 
+ # Include routers
++app.include_router(auth_router)
+ app.include_router(tasks.router)
+ 
+ if __name__ == "__main__":
+     import uvicorn
+
+[0m
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/requirements.txt
+Let me check and update the requirements.txt to ensure we have needed packages:
+[0m→ [0mRead backend
+[0m→ [0mRead pyproject.toml
+Let me check if there's a pyproject.toml:
+📝 Log saved: logs/iteration-52.md
+📊 Token Usage: 5000 / Session: 36750 / 64000

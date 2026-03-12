@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from .routers import tasks
+from .auth import router as auth_router
 
 app = FastAPI(
     title="Tact AI",
@@ -27,6 +28,7 @@ async def health_check():
 
 
 # Include routers
+app.include_router(auth_router)
 app.include_router(tasks.router)
 
 if __name__ == "__main__":
