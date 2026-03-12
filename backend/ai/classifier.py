@@ -10,12 +10,12 @@ Classifies tasks into one of four Eisenhower quadrants:
 
 import json
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from datetime import datetime
 
 import redis
 from openai import AsyncOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from backend.config import settings
 
@@ -31,7 +31,12 @@ NOT_IMPORTANT_NOT_URGENT = "not_important_not_urgent"
 class QuadrantClassification(BaseModel):
     """Structured output from GPT-4 for task classification"""
 
-    quadrant: str = Field(
+    quadrant: Literal[
+        "important_urgent",
+        "important_not_urgent",
+        "not_important_urgent",
+        "not_important_not_urgent",
+    ] = Field(
         ...,
         description="One of: important_urgent, important_not_urgent, not_important_urgent, not_important_not_urgent",
     )
