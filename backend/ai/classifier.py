@@ -21,6 +21,12 @@ from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Module-level quadrant constants for easier imports
+IMPORTANT_URGENT = "important_urgent"
+IMPORTANT_NOT_URGENT = "important_not_urgent"
+NOT_IMPORTANT_URGENT = "not_important_urgent"
+NOT_IMPORTANT_NOT_URGENT = "not_important_not_urgent"
+
 
 class QuadrantClassification(BaseModel):
     """Structured output from GPT-4 for task classification"""
