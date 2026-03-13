@@ -29,4 +29,4 @@
    - ✅ Verified Redis caching implementation (24h TTL on classifier)
    - ✅ Confirmed connection pooling configured (pool_size=20, max_overflow=30)
    - ✅ Comprehensive documentation in docs/load-testing-optimization.md
- - [ ] **Set up monitoring and observability**: Integrate Sentry for errors, expose Prometheus metrics (API latency, scheduling duration). Create Grafana dashboard and alert rules. Write runbooks in `docs/operations.md`.
+ - [x] **Set up monitoring and observability**: Integrate Sentry for errors, expose Prometheus metrics (API latency, scheduling duration). Create Grafana dashboard and alert rules. Write runbooks in `docs/operations.md`.
