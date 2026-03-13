@@ -1,0 +1,71 @@
+{
+  "dashboard": {
+    "title": "Tact AI Overview",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(backend_http_requests_total[5m])",
+            "legendFormat": "Requests per second"
+          }
+        ],
+        "yAxes": [
+          {
+          "    unit": "req/s"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(backend_http_request_duration_seconds_sum[5m]) / rate(backend_http_request_duration_seconds_count[5m])",
+            "legendFormat": "Average Duration"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "s"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(backend_http_requests_total{status=~\"5..\"}[5m])",
+            "legendFormat": "Error Rate"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "backend_active_connections",
+            "legendFormat": "Connections"
+          }
+        ]
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1
+  },
+  "overwrite": true
+}

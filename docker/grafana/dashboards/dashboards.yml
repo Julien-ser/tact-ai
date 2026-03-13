@@ -1,0 +1,13 @@
+# Grafana Dashboard Provisioning for Tact AI
+apiVersion: 1
+
+providers:
+  - name: 'Tact AI Monitoring'
+    orgId: 1
+    folder: 'Tact AI'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+    updateIntervalSeconds: 30
