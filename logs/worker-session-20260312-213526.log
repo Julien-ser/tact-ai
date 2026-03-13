@@ -280,3 +280,112 @@ Changes not staged for commit:
 	modified:   logs/iteration-199.md
 	modified:   logs/worker-session-20260312-213526.log
 [0m
+[0m$ [0mls -la tests/integration/
+total 72
+drwxr-xr-x 3 julien julien  4096 Mar 12 21:37 .
+drwxr-xr-x 4 julien julien  4096 Mar 12 16:53 ..
+-rw-r--r-- 1 julien julien    28 Mar 12 17:28 __init__.py
+drwxr-xr-x 2 julien julien  4096 Mar 12 21:37 __pycache__
+-rw-r--r-- 1 julien julien  5910 Mar 12 19:26 test_auth.py
+-rw-r--r-- 1 julien julien 14303 Mar 12 21:37 test_scheduler.py
+-rw-r--r-- 1 julien julien 16515 Mar 12 21:37 test_tasks.py
+-rw-r--r-- 1 julien julien 12242 Mar 12 21:32 test_websocket.py
+[0m
+Let me check what's happening with git status - the test files I created should appear. Let me list the tests/integration directory:
+[0m$ [0mgit status --porcelain
+M logs/iteration-199.md
+ M logs/worker-session-20260312-213526.log
+ M logs/worker-session-20260312-213537.log
+[0m
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-199.md
+	modified:   logs/worker-session-20260312-213526.log
+	modified:   logs/worker-session-20260312-213537.log
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-203.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me check git status again to see all untracked files:
+[0m$ [0mls -la tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md
+-rw-r--r-- 1 julien julien  1053 Mar 12 21:38 codecov.yml
+-rw-r--r-- 1 julien julien  8880 Mar 12 21:38 README.md
+-rw-r--r-- 1 julien julien  3702 Mar 12 21:38 TASKS.md
+-rw-r--r-- 1 julien julien 14303 Mar 12 21:37 tests/integration/test_scheduler.py
+-rw-r--r-- 1 julien julien 16515 Mar 12 21:37 tests/integration/test_tasks.py
+[0m
+Let me check if those files exist and their modification times:
+[0m→ [0mRead .gitignore
+The files exist and are modified recently, but git status isn't showing them properly. Let me explicitly add the files we care about and commit:
+[0m
+[0m$ [0mgit add tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md
+[0m
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-199.md
+	modified:   logs/worker-session-20260312-213526.log
+	modified:   logs/worker-session-20260312-213537.log
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-203.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+That's the issue - my shell is in the backend directory from the pip install. Let me work from the project root:
+[0m$ [0mpwd
+/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai
+[0m
+[0m$ [0mgit add tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md && git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-199.md
+	modified:   logs/worker-session-20260312-213526.log
+	modified:   logs/worker-session-20260312-213537.log
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-203.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me verify the files are in the expected location and add them explicitly:
+[0m$ [0mls -la tests/integration/ && git add -v tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md
+total 72
+drwxr-xr-x 3 julien julien  4096 Mar 12 21:37 .
+drwxr-xr-x 4 julien julien  4096 Mar 12 16:53 ..
+-rw-r--r-- 1 julien julien    28 Mar 12 17:28 __init__.py
+drwxr-xr-x 2 julien julien  4096 Mar 12 21:37 __pycache__
+-rw-r--r-- 1 julien julien  5910 Mar 12 19:26 test_auth.py
+-rw-r--r-- 1 julien julien 14303 Mar 12 21:37 test_scheduler.py
+-rw-r--r-- 1 julien julien 16515 Mar 12 21:37 test_tasks.py
+-rw-r--r-- 1 julien julien 12242 Mar 12 21:32 test_websocket.py
+[0m
+The files are being ignored by some global gitignore. Let's force add them:
+[0m$ [0mgit add -f tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md && git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-199.md
+	modified:   logs/worker-session-20260312-213526.log
+	modified:   logs/worker-session-20260312-213537.log
+	modified:   requirements.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-203.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
