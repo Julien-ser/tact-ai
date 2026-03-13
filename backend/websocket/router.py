@@ -110,7 +110,7 @@ async def websocket_endpoint(
     # Accept connection
     await websocket.accept()
 
-    connection = Connection(websocket, user.id)
+    connection = Connection(websocket, int(user.id))
     manager.add_connection(connection)
 
     logger.info(
