@@ -148,7 +148,13 @@ Optional:
 - `GET /scheduler/history` - View past schedules
 
 ### Real-Time
-- `WS /ws` - WebSocket for live updates
+- `WS /ws` - WebSocket for live updates (authenticated via JWT token)
+  
+  **Events**: `task_created`, `task_updated`, `task_deleted`, `conflict_alert`, `schedule_updated`, `connected`, `pong`
+  
+  Connect with: `ws://localhost:8000/ws?token=YOUR_JWT_TOKEN`
+  
+  The frontend automatically maintains a WebSocket connection and displays real-time notifications in the bell icon. Task list updates are synchronized automatically across browser tabs and devices.
 
 Swagger UI: http://localhost:8000/docs (when running)
 
@@ -243,4 +249,15 @@ For issues, feature requests, or questions, please open an issue on GitHub or co
 
 ---
 
-**Status**: In active development - Phase 3: User Interface & Task Management (Authentication, React Component Library, and Full Task CRUD Complete)
+**Status**: In active development - Phase 3: User Interface & Task Management Complete ✅
+
+**Completed Features**:
+- Authentication & User Isolation
+- React Component Library (TaskCard, QuadrantBoard, TimelineView, ChainVisualizer)
+- Full Task CRUD with AI Classification
+- **Real-Time Updates via WebSocket** (Task sync, notifications, conflict alerts)
+- Drag-and-drop interface
+- Gantt chart visualization
+- JWT authentication
+
+Remaining: Phase 4 (Testing, Deployment & Operations) - In Progress

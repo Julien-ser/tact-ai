@@ -29,13 +29,6 @@ from shared.schemas import (
 )
 
 logger = logging.getLogger(__name__)
-from shared.schemas import (
-    TaskCreate,
-    TaskUpdate,
-    TaskResponse,
-    Quadrant,
-    Priority,
-)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 

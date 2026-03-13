@@ -5,6 +5,7 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import TasksPage from './pages/TasksPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import NotificationBell from './components/NotificationBell';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -42,6 +43,7 @@ const Navigation: React.FC = () => {
               <span className="text-sm text-gray-700">
                 {user.username || user.email}
               </span>
+              <NotificationBell />
               <button
                 onClick={logout}
                 className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"

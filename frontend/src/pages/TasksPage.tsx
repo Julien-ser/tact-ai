@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import TaskCard from '../components/TaskCard';
 import TaskForm from '../components/TaskForm';
 import { Task, Quadrant, Priority } from '../types';
 import taskApi from '../services/taskApi';
+import { useWebSocket } from '../contexts/WebSocketContext';
 
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -14,6 +15,52 @@ const TasksPage: React.FC = () => {
     completed?: boolean;
     priority?: Priority;
   }>({});
+  
+  const { notifications, clearNotification } = useWebSocket();
+  
+  // Track processed notification IDs to avoid duplicate handling
+  const processedIdsRef = React.useRef<Set<string>>(new Set());
+  
+  // Handle WebSocket notifications to keep task list in sync
+  useEffect(() => {
+    // Process only new notifications
+    const newNotifications = notifications.filter(n => !processedIdsRef.current.has(n.id));
+    
+    newNotifications.forEach(notification => {
+      const { type, data } = notification;
+      processedIdsRef.current.add(notification.id);
+      
+      switch (type) {
+        case 'task_created':
+          // Add the new task to the beginning of the list
+          setTasks(prev => [data as Task, ...prev]);
+          break;
+          
+        case 'task_updated':
+          // Update the task in the list
+          setTasks(prev => 
+            prev.map(task => task.id === data.id ? { ...task, ...data } as Task : task)
+          );
+          break;
+          
+        case 'task_deleted':
+          // Remove the deleted task
+          setTasks(prev => prev.filter(task => task.id !== data.task_id));
+          break;
+          
+        case 'schedule_updated':
+          // Optionally handle schedule updates separately
+          // For now, we can log or show a notification
+          console.log('Schedule updated:', data);
+          break;
+          
+        case 'conflict_alert':
+          // Show conflict alert - could be displayed as a toast
+          console.warn('Conflict detected:', data);
+          break;
+      }
+    });
+  }, [notifications]);
 
   useEffect(() => {
     fetchTasks();
