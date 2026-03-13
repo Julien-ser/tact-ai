@@ -32,12 +32,36 @@ export const options = {
 // Base URL (adjust as needed)
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8000';
 
-// Test data - will be populated from CSV or generated
-const testUsers = new SharedArray('testUsers', function() {
-  // In production, load from CSV: return open('users.csv').split('\n').slice(1);
-  // For now, generate placeholder data
-  return [];
-});
+// Test users credentials - loaded from environment or generated
+// Format: user1:password1,user2:password2,...
+// In production, load from CSV or generate dynamically
+const USER_CREDENTIALS = __ENV.USER_CREDENTIALS ?
+  __ENV.USER_CREDENTIALS.split(',') :
+  [`loadtest1:testpassword123`]; // Default single user for testing
+
+// Helper functions
+function getAuthHeaders(token) {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomChoice(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function parseResponseBody(res) {
+  try {
+    return res.json;
+  } catch (e) {
+    return null;
+  }
+}
 
 // Helper functions
 function getAuthHeaders(token) {
@@ -88,21 +112,73 @@ function generateTaskData(index) {
   };
 }
 
+// Authentication: login and get token
+function loginUser(credentialIndex) {
+  const credentials = USER_CREDENTIALS[credentialIndex % USER_CREDENTIALS.length];
+  const [username, password] = credentials.split(':');
+
+  const loginPayload = JSON.stringify({
+    username: username,
+    password: password,
+  });
+
+  const loginRes = http.post(
+    `${BASE_URL}/auth/login`,
+    loginPayload,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+
+  if (loginRes.status === 200) {
+    const data = parseResponseBody(loginRes);
+    return {
+      success: true,
+      token: data?.access_token,
+      user: data?.username || username,
+    };
+  }
+
+  return {
+    success: false,
+    status: loginRes.status,
+    error: parseResponseBody(loginRes)?.detail || 'Login failed',
+  };
+}
+
 // Main execution
 export default function() {
-  const userId = Math.floor(this.vu / 2) + 1;  // Spread users across different IDs
-  const vuType = this.vu % 3;  // 0: auth, 1: tasks, 2: scheduler
+  // Distribute VUs across different user accounts
+  const credentialIndex = Math.floor(this.vu / 3); // Group VUs by 3 to share user accounts
+  const vuType = this.vu % 3;  // 0: tasks, 1: scheduler, 2: mixed
 
-  // Each virtual user simulates a different workflow based on type
+  // Authenticate first to get token
+  const authResult = loginUser(credentialIndex);
+
+  if (!authResult.success) {
+    errorRate.add(1);
+    responseTimeTrend.add(0);
+    console.error(`VU ${this.vu}: Login failed with status ${authResult.status}`);
+    sleep(5); // Wait before retrying
+    return;
+  }
+
+  const token = authResult.token;
+  const headers = getAuthHeaders(token);
+
+  // Track successful auth
+  errorRate.add(0);
+
+  // Execute workflow based on VU type
   if (vuType === 0) {
-    // Authentication workflow (20% of users)
-    handleAuthWorkflow(userId);
+    // Task CRUD workflow (33% of users)
+    handleTaskWorkflow(headers, this.vu);
   } else if (vuType === 1) {
-    // Task CRUD workflow (60% of users)
-    handleTaskWorkflow(userId);
+    // Scheduler generation workflow (33% of users)
+    handleSchedulerWorkflow(headers, this.vu);
   } else {
-    // Scheduler generation workflow (20% of users)
-    handleSchedulerWorkflow(userId);
+    // Mixed workflow: tasks then scheduler (33% of users)
+    handleTaskWorkflow(headers, this.vu);
+    sleep(1);
+    handleSchedulerWorkflow(headers, this.vu);
   }
 
   sleep(1);
@@ -146,117 +222,109 @@ function handleAuthWorkflow(userId) {
   sleep(2);
 }
 
-function handleTaskWorkflow(userId) {
-  // Note: In real scenario, we'd first authenticate and get token
-  // For load testing, we assume valid token exists (mocked or from prior login)
-  // This is a simplified version - in production, pass token between iterations
+function handleTaskWorkflow(headers, vuId) {
+   // List tasks (with pagination)
+   const listRes = http.get(
+     `${BASE_URL}/tasks/?limit=20&offset=0`,
+     { headers: headers }
+   );
 
-  const token = `test_token_${userId}`;  // Placeholder
+   check(listRes, {
+     'list tasks status 200': (r) => r.status === 200,
+     'has X-Total-Count header': (r) => r.headers['X-Total-Count'] !== undefined,
+   });
 
-  // List tasks (with pagination)
-  const listRes = http.get(
-    `${BASE_URL}/tasks/?limit=20&offset=0`,
-    { headers: getAuthHeaders(token) }
-  );
+   responseTimeTrend.add(listRes.timings.duration);
 
-  check(listRes, {
-    'list tasks status 200': (r) => r.status === 200,
-    'has X-Total-Count header': (r) => r.headers['X-Total-Count'] !== undefined,
-  });
+   if (listRes.status === 200 && listRes.body.length > 10) {
+     const tasks = parseResponseBody(listRes) || [];
 
-  responseTimeTrend.add(listRes.timings.duration);
+     if (tasks.length > 0) {
+       const taskId = tasks[0].id;
 
-  if (listRes.status === 200 && listRes.body.length > 10) {
-    const tasks = listRes.json;
+       // Update a task
+       const updatePayload = JSON.stringify({
+         title: `Updated: ${tasks[0].title}`,
+         description: 'Updated via load test',
+       });
 
-    if (tasks.length > 0) {
-      const taskId = tasks[0].id;
+       const updateRes = http.put(
+         `${BASE_URL}/tasks/${taskId}`,
+         updatePayload,
+         { headers: headers }
+       );
 
-      // Update a task
-      const updatePayload = JSON.stringify({
-        title: `Updated: ${tasks[0].title}`,
-        description: 'Updated via load test',
-      });
+       check(updateRes, {
+         'update task status 200': (r) => r.status === 200,
+       });
+     }
 
-      const updateRes = http.put(
-        `${BASE_URL}/tasks/${taskId}`,
-        updatePayload,
-        { headers: getAuthHeaders(token) }
-      );
+     // Create a new task
+     const newTask = generateTaskData(randomInt(1000, 9999));
+     const createRes = http.post(
+       `${BASE_URL}/tasks/`,
+       JSON.stringify(newTask),
+       { headers: headers }
+     );
 
-      check(updateRes, {
-        'update task status 200': (r) => r.status === 200,
-      });
-    }
+     check(createRes, {
+       'create task status 200': (r) => r.status === 200,
+     });
+   }
 
-    // Create a new task
-    const newTask = generateTaskData(randomInt(1000, 9999));
-    const createRes = http.post(
-      `${BASE_URL}/tasks/`,
-      JSON.stringify(newTask),
-      { headers: getAuthHeaders(token) }
-    );
+   sleep(1);
+ }
 
-    check(createRes, {
-      'create task status 200': (r) => r.status === 200,
-    });
-  }
+function handleSchedulerWorkflow(headers, vuId) {
+   // Generate schedule (this is a heavy operation)
+   const start = new Date();
+   const end = new Date(Date.now() + 7 * 86400000); // 7 days from now
 
-  sleep(1);
-}
+   const scheduleRes = http.post(
+     `${BASE_URL}/scheduler/generate?start_date=${start.toISOString()}&end_date=${end.toISOString()}`,
+     undefined,
+     { headers: headers }
+   );
 
-function handleSchedulerWorkflow(userId) {
-  const token = `test_token_${userId}`;  // Placeholder
+   const success = check(scheduleRes, {
+     'scheduler status 200': (r) => r.status === 200,
+     'has timeline_id': (r) => {
+       if (r.status !== 200) return false;
+       const data = parseResponseBody(scheduleRes);
+       return data?.timeline_id !== undefined;
+     },
+   });
 
-  // Generate schedule (this is a heavy operation)
-  const start = new Date();
-  const end = new Date(Date.now() + 7 * 86400000); // 7 days from now
+   responseTimeTrend.add(scheduleRes.timings.duration);
+   errorRate.add(!success);
 
-  const scheduleRes = http.post(
-    `${BASE_URL}/scheduler/generate?start_date=${start.toISOString()}&end_date=${end.toISOString()}`,
-    undefined,
-    { headers: getAuthHeaders(token) }
-  );
+   if (success && scheduleRes.status === 200) {
+     const data = parseResponseBody(scheduleRes);
+     const timelineId = data?.timeline_id;
 
-  const success = check(scheduleRes, {
-    'scheduler status 200': (r) => r.status === 200,
-    'has timeline_id': (r) => {
-      if (r.status !== 200) return false;
-      const data = r.json;
-      return data.timeline_id !== undefined;
-    },
-  });
+     // Get schedule history
+     const historyRes = http.get(
+       `${BASE_URL}/scheduler/history?limit=10`,
+       { headers: headers }
+     );
 
-  responseTimeTrend.add(scheduleRes.timings.duration);
-  errorRate.add(!success);
+     check(historyRes, {
+       'history status 200': (r) => r.status === 200,
+     });
 
-  if (success && scheduleRes.status === 200) {
-    const data = scheduleRes.json;
-    const timelineId = data.timeline_id;
+     // Get specific timeline
+     const timelineRes = http.get(
+       `${BASE_URL}/scheduler/${timelineId}`,
+       { headers: headers }
+     );
 
-    // Get schedule history
-    const historyRes = http.get(
-      `${BASE_URL}/scheduler/history?limit=10`,
-      { headers: getAuthHeaders(token) }
-    );
+     check(timelineRes, {
+       'timeline status 200': (r) => r.status === 200,
+     });
+   }
 
-    check(historyRes, {
-      'history status 200': (r) => r.status === 200,
-    });
-
-    // Get specific timeline
-    const timelineRes = http.get(
-      `${BASE_URL}/scheduler/${timelineId}`,
-      { headers: getAuthHeaders(token) }
-    );
-
-    check(timelineRes, {
-      'timeline status 200': (r) => r.status === 200,
-    });
-  }
-
-  sleep(2);  // Scheduler operations are heavy, allow more rest
-}
+   sleep(2);  // Scheduler operations are heavy, allow more rest
+ }
 
 // WebSocket test (separate function, not called by default)
 export function websocketTest() {

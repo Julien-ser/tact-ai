@@ -24,6 +24,10 @@ def upgrade():
     op.create_index(op.f("ix_tasks_user_priority"), "tasks", ["user_id", "priority"])
     op.create_index(op.f("ix_tasks_user_quadrant"), "tasks", ["user_id", "quadrant"])
     op.create_index(op.f("ix_tasks_user_due_date"), "tasks", ["user_id", "due_date"])
+    # Composite index for pagination with ORDER BY created_at DESC
+    op.create_index(
+        op.f("ix_tasks_user_created"), "tasks", ["user_id", "created_at DESC"]
+    )
 
     # Improve timeline index for common query pattern
     op.drop_index(op.f("ix_timelines_user_id"), table_name="timelines")
@@ -47,6 +51,7 @@ def downgrade():
     op.drop_index(op.f("ix_tasks_user_priority"), table_name="tasks")
     op.drop_index(op.f("ix_tasks_user_quadrant"), table_name="tasks")
     op.drop_index(op.f("ix_tasks_user_due_date"), table_name="tasks")
+    op.drop_index(op.f("ix_tasks_user_created"), table_name="tasks")
 
     # Restore original timeline indexes
     op.drop_index(op.f("ix_timelines_user_generated"), table_name="timelines")

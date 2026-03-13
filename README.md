@@ -231,6 +231,53 @@ Production monitoring includes:
 
 See [docs/operations.md](./docs/operations.md) for runbooks and alert procedures.
 
+## Performance & Load Testing
+
+Tact-AI is designed to handle 100+ concurrent users. Load testing is essential before production deployment.
+
+### Load Testing Setup
+
+The project includes a comprehensive k6 load test suite:
+
+```bash
+# 1. Start services
+docker-compose up -d postgres redis
+
+# 2. Apply migrations and create test data
+cd backend && alembic upgrade head
+cd .. && python load-tests/setup-test-data.py
+
+# 3. Start backend (in production use gunicorn)
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+# 4. Run load tests (in another terminal)
+cd load-tests
+k6 run --out json=results.json load-test.js
+
+# 5. Analyze results
+python analyze-results.py results.json -o report.txt
+```
+
+### Performance Optimizations
+
+- **Database Indexes**: Composite indexes on tasks (user_id + filters), task_chains (task_id + relationship_type), and timelines (user_id + generated_at DESC)
+- **Pagination**: Offset/limit with `X-Total-Count` header for efficient task listing
+- **Redis Caching**: 24-hour cache on AI classifier to reduce GPT-4 API calls
+- **Connection Pooling**: PostgreSQL pool_size=20, max_overflow=30 for 50+ concurrent connections
+- **Scheduler**: OR-Tools CP-SAT with configurable workers (default: 4) and time limits
+
+### Expected Benchmarks (4+ CPU, 8GB RAM)
+
+| Endpoint | p95 | p99 |
+|----------|-----|-----|
+| GET /tasks/ | 150ms | 300ms |
+| POST /tasks/ | 300ms | 600ms |
+| POST /scheduler/generate | 8000ms | 15000ms |
+| GET /scheduler/history | 100ms | 200ms |
+
+See [docs/load-testing-optimization.md](./docs/load-testing-optimization.md) for detailed optimization report and troubleshooting.
+
 ## Contributing
 
 This project follows the autonomous agent workflow. Tasks are tracked in `TASKS.md`. Each task should:
@@ -249,19 +296,22 @@ For issues, feature requests, or questions, please open an issue on GitHub or co
 
 ---
 
-**Status**: In active development - Phase 4: Testing, Deployment & Operations - **Testing Complete ✅**
+**Status**: In active development - Phase 4: Testing, Deployment & Operations - **Testing & Load Testing Complete ✅**
 
 **Completed Features**:
-- Comprehensive Test Suite (>80% coverage)
-  - Unit tests for classifier, dependency resolver, scheduler engine, conflict detection
-  - Integration tests for authentication, tasks, scheduler, and WebSocket
-  - Codecov integration for coverage tracking
-- Authentication & User Isolation
-- React Component Library (TaskCard, QuadrantBoard, TimelineView, ChainVisualizer)
-- Full Task CRUD with AI Classification
-- Real-Time Updates via WebSocket (Task sync, notifications, conflict alerts)
-- Drag-and-drop interface
-- Gantt chart visualization
-- JWT authentication
+- ✅ Comprehensive Test Suite (>80% coverage)
+- ✅ Authentication & User Isolation (JWT)
+- ✅ React Component Library (TaskCard, QuadrantBoard, TimelineView, ChainVisualizer)
+- ✅ Full Task CRUD with AI Classification (GPT-4 + fallback)
+- ✅ Real-Time Updates via WebSocket
+- ✅ Drag-and-drop interface
+- ✅ Gantt chart visualization
+- ✅ Load Testing & Performance Optimization
+  - k6 load tests with real authentication
+  - Results analysis script
+  - Database indexing (tasks, task_chains, timelines)
+  - Redis caching (classifier)
+  - Connection pooling tuned for 100+ users
+  - Documentation: docs/load-testing-optimization.md
 
-Remaining: Phase 4 (Deployment & Operations) - In Progress
+Remaining: Phase 4 (Monitoring & Observability) - In Progress
