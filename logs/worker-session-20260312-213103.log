@@ -313,3 +313,181 @@ drwxr-xr-x  4 julien julien  4096 Mar 12 16:53 tests
 [0m✱ [0mGlob "requirements*.txt"[90m 1 match[0m
 📝 Log saved: logs/iteration-191.md
 📊 Token Usage: 4500 / Session: 8750 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   4cb292f..c2c6992  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 10/14 completed, 4 remaining
+   Next task: **Write comprehensive test suite**: Achieve >80% coverage fo...
+📍 Iteration 192 at Thu Mar 12 09:33:57 PM EDT 2026...
+✓ Progress: Git commit found
+📊 Task attempt 2: Progress detected, continuing...
+📚 Loading context from previous iteration attempts...
+🤖 OpenCode processing: **Write comprehensive test suite**: Achieve >80% coverage for classifier, dependency resolver, scheduler, and conflict detection. Include integration tests for main API routes. Set up Codecov reporting.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll help you complete the test suite with >80% coverage and set up Codecov reporting. Let me first explore the codebase to understand the existing structure and identify what needs testing.
+[0m$ [0mfind . -type f -name "*.py" | grep -E "(backend|tests)" | head -30
+./backend/__init__.py
+./backend/websocket/__init__.py
+./backend/websocket/router.py
+./backend/websocket/manager.py
+./backend/main.py
+./backend/database/__init__.py
+./backend/alembic/versions/20260312_000001_initial_schema.py
+./backend/alembic/env.py
+./backend/config.py
+./backend/auth/__init__.py
+./backend/auth/router.py
+./backend/auth/utils.py
+./backend/scheduler/__init__.py
+./backend/scheduler/dependency.py
+./backend/scheduler/conflicts.py
+./backend/scheduler/engine.py
+./backend/routers/tasks.py
+./backend/routers/scheduler.py
+./backend/ai/classifier.py
+./backend/ai/__init__.py
+./backend/models/task.py
+./backend/models/__init__.py
+./backend/models/timeline_task.py
+./backend/models/timeline.py
+./backend/models/time_block.py
+./backend/models/user.py
+./backend/models/task_chain.py
+./tests/integration/__init__.py
+./tests/integration/test_websocket.py
+./tests/integration/test_auth.py
+[0m
+[0m$ [0mfind ./tests -name "*.py" | sort
+./tests/integration/__init__.py
+./tests/integration/test_auth.py
+./tests/integration/test_websocket.py
+./tests/unit/__init__.py
+./tests/unit/test_auth.py
+./tests/unit/test_classifier.py
+./tests/unit/test_conflicts.py
+./tests/unit/test_dependency.py
+./tests/unit/test_engine.py
+./tests/unit/test_tasks.py
+[0m
+[0m$ [0mpython -m pytest tests/ --cov=backend --cov-report=term-missing --cov-report=xml 2>&1 | tail -50
+backend/routers/tasks.py:17: in <module>
+    from backend.auth.utils import get_current_user
+backend/auth/__init__.py:5: in <module>
+    from .router import router
+backend/auth/router.py:13: in <module>
+    from backend.auth.utils import (
+backend/auth/utils.py:7: in <module>
+    from jose import JWTError, jwt
+E   ModuleNotFoundError: No module named 'jose'
+___________________ ERROR collecting tests/unit/test_auth.py ___________________
+ImportError while importing test module '/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/unit/test_auth.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit/test_auth.py:10: in <module>
+    from jose import JWTError
+E   ModuleNotFoundError: No module named 'jose'
+__________________ ERROR collecting tests/unit/test_tasks.py ___________________
+ImportError while importing test module '/home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/tests/unit/test_tasks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit/test_tasks.py:12: in <module>
+    from backend.routers.tasks import router
+backend/routers/tasks.py:17: in <module>
+    from backend.auth.utils import get_current_user
+backend/auth/__init__.py:5: in <module>
+    from .router import router
+backend/auth/router.py:13: in <module>
+    from backend.auth.utils import (
+backend/auth/utils.py:7: in <module>
+    from jose import JWTError, jwt
+E   ModuleNotFoundError: No module named 'jose'
+=============================== warnings summary ===============================
+backend/database/__init__.py:10
+  /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/database/__init__.py:10: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/integration/test_auth.py
+ERROR tests/integration/test_websocket.py
+ERROR tests/unit/test_auth.py
+ERROR tests/unit/test_tasks.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+========================= 1 warning, 4 errors in 2.08s =========================
+[0m
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/requirements.txt
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/pyproject.toml
+[0m
+[0m$ [0mls -la backend/
+total 64
+drwxr-xr-x 12 julien julien 4096 Mar 12 19:28 .
+drwxr-xr-x 15 julien julien 4096 Mar 12 20:31 ..
+drwxr-xr-x  3 julien julien 4096 Mar 12 17:30 ai
+drwxr-xr-x  3 julien julien 4096 Mar 12 17:19 alembic
+-rw-r--r--  1 julien julien 1326 Mar 12 17:19 alembic.ini
+drwxr-xr-x  3 julien julien 4096 Mar 12 20:32 auth
+-rw-r--r--  1 julien julien  695 Mar 12 17:33 config.py
+drwxr-xr-x  2 julien julien 4096 Mar 12 16:53 core
+drwxr-xr-x  3 julien julien 4096 Mar 12 17:20 database
+-rw-r--r--  1 julien julien   23 Mar 12 17:21 __init__.py
+-rw-r--r--  1 julien julien 1131 Mar 12 19:29 main.py
+drwxr-xr-x  3 julien julien 4096 Mar 12 19:13 models
+drwxr-xr-x  2 julien julien 4096 Mar 12 20:32 __pycache__
+drwxr-xr-x  3 julien julien 4096 Mar 12 20:29 routers
+drwxr-xr-x  3 julien julien 4096 Mar 12 18:00 scheduler
+drwxr-xr-x  2 julien julien 4096 Mar 12 19:29 websocket
+[0m
+[0m$ [0mfind . -name "requirements*.txt" -o -name "pyproject.toml" -o -name "setup.py" | head -20
+./requirements.txt
+./pyproject.toml
+[0m
+[0m→ [0mRead requirements.txt
+[0m→ [0mRead pyproject.toml
+[0m
+[0m$ [0mpip install -e ".[dev]" 2>&1 | tail -20
+│ exit code: 1
+  ╰─> [14 lines of output]
+      error: Multiple top-level packages discovered in a flat-layout: ['logs', 'shared', 'docker', 'backend', 'frontend'].
+      
+      To avoid accidental inclusion of unwanted files or directories,
+      setuptools will not proceed with this build.
+      
+      If you are trying to create a single distribution with multiple packages
+      on purpose, you should not rely on automatic discovery.
+      Instead, consider the following options:
+      
+      1. set up custom discovery (`find` directive with `include` or `exclude`)
+      2. use a `src-layout`
+      3. explicitly set `py_modules` or `packages` with a list of names
+      
+      To find more information, look for "package discovery" on setuptools docs.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'file:///home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai' when getting requirements to build editable
+[0m
+I need to install dependencies first. Let me install from requirements.txt:
+[0m$ [0mpip install -r requirements.txt 2>&1 | tail -10
+If you prefer to avoid building psycopg2 from source, please install the PyPI
+      'psycopg2-binary' package instead.
+      
+      For further information please check the 'doc/src/install.rst' file (also at
+      <https://www.psycopg.org/docs/install.html>).
+      
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'psycopg2-binary' when getting requirements to build wheel
+[0m
+Let me install dependencies individually to avoid the psycopg2 build issue:
