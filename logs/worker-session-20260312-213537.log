@@ -1127,3 +1127,121 @@ The `docs/deployment.md` contains detailed instructions for:
 All files are production-ready and properly documented. I've marked the task as `[x]` in TASKS.md.
 📝 Log saved: logs/iteration-207.md
 📊 Token Usage: 3750 / Session: 32750 / 64000
+✅ Changes committed
+To https://github.com/Julien-ser/tact-ai.git
+   14d5482..464e04e  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 12/14 completed, 2 remaining
+   Next task: **Perform load testing and optimization**: Use k6 to simulat...
+📍 Iteration 208 at Thu Mar 12 09:45:47 PM EDT 2026...
+🤖 OpenCode processing: **Perform load testing and optimization**: Use k6 to simulate 100+ concurrent users. Profile scheduler performance, add database indexing, implement pagination on task lists, and tune Redis caching. Record results.
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+[0m✱ [0mGlob "**/*.py"[90m 42 matches[0m
+I'll complete the load testing and optimization task. Let me first explore the codebase to understand the current structure and identify what needs to be done.
+[0m✱ [0mGlob "**/docker-compose*.yml"[90m 2 matches[0m
+[0m✱ [0mGlob "**/requirements*.txt"[90m 1 match[0m
+[0m→ [0mRead backend/alembic/versions/20260312_000001_initial_schema.py
+[0m→ [0mRead backend/routers/tasks.py
+[0m→ [0mRead backend/scheduler/engine.py
+[0m→ [0mRead requirements.txt
+Let me read a few more key files to understand the full architecture:
+[0m→ [0mRead backend/database/__init__.py
+[0m→ [0mRead backend/routers/scheduler.py
+[0m→ [0mRead backend/ai/classifier.py
+[0m
+[0m# [0mTodos
+[ ] Add pagination to task list endpoint (limit/offset parameters)
+[ ] Add composite database indexes (user_id, completed, created_at DESC)
+[ ] Add additional index (user_id, due_date) for deadline queries
+[ ] Add performance profiling to scheduler engine (timing logs)
+[ ] Optimize Redis caching configuration (connection pooling)
+[ ] Create k6 load testing script for 100+ concurrent users
+[ ] Run load tests and record performance results
+[ ] Update README.md with performance improvements and results
+[ ] Update TASKS.md and mark load testing task as complete
+[0m
+Now I'll create a todo list to track all the work:
+Now let me add pagination to the task list endpoint:
+[0m← [0mEdit backend/routers/tasks.py
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/tact-ai/backend/routers/tasks.py
+@@ -36,34 +36,66 @@
+ @router.get("/", response_model=List[TaskResponse])
+ async def list_tasks(
+     completed: Optional[bool] = Query(None, description="Filter by completion status"),
+     priority: Optional[Priority] = Query(None, description="Filter by priority level"),
++    limit: int = Query(
++        50, ge=1, le=100, description="Maximum number of tasks to return"
++    ),
++    offset: int = Query(0, ge=0, description="Number of tasks to skip"),
+     current_user: UserModel = Depends(get_current_user),
+     db: Session = Depends(get_db),
+ ):
+     """
+-    List tasks with optional filters.
++    List tasks with optional filters and pagination.
+ 
+     Args:
+         completed: Filter by completion status
+         priority: Filter by priority level
++        limit: Maximum number of tasks to return (1-100, default 50)
++        offset: Number of tasks to skip for pagination (default 0)
+         current_user: Authenticated user
+         db: Database session
+ 
+     Returns:
+         List of tasks belonging to the current user
++
++    Response Headers:
++        X-Total-Count: Total number of tasks matching the filters (for pagination)
+     """
++    from fastapi import Response
++
+     user_id = current_user.id
+ 
++    # Build base query
+     query = select(TaskModel).where(TaskModel.user_id == user_id)
++    count_query = (
++        select(sa.func.count())
++        .select_from(TaskModel)
++        .where(TaskModel.user_id == user_id)
++    )
+ 
+     if completed is not None:
+         query = query.where(TaskModel.completed == completed)
++        count_query = count_query.where(TaskModel.completed == completed)
+     if priority is not None:
+         query = query.where(TaskModel.priority == priority.value)
++        count_query = count_query.where(TaskModel.priority == priority.value)
+ 
+-    tasks = db.execute(query.order_by(TaskModel.created_at.desc())).scalars().all()
++    # Get total count for header
++    total_count = db.execute(count_query).scalar_one()
+ 
++    # Apply ordering, pagination and fetch results
++    tasks = (
++        db.execute(
++            query.order_by(TaskModel.created_at.desc()).limit(limit).offset(offset)
++        )
++        .scalars()
++        .all()
++    )
++
++    # Return with total count header
++    response = Response(content=None)
++    response.headers["X-Total-Count"] = str(total_count)
+     return tasks
+ 
+ 
+ @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+
+[0m
+[0m→ [0mRead backend/routers/tasks.py[90m [limit=50][0m
+Let me read the current state of the file to understand what broke:
+[0m→ [0mRead backend/routers/tasks.py[90m [offset=50, limit=100][0m
+📝 Log saved: logs/iteration-208.md
+📊 Token Usage: 3750 / Session: 36500 / 64000

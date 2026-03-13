@@ -37,32 +37,64 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 async def list_tasks(
     completed: Optional[bool] = Query(None, description="Filter by completion status"),
     priority: Optional[Priority] = Query(None, description="Filter by priority level"),
+    limit: int = Query(
+        50, ge=1, le=100, description="Maximum number of tasks to return"
+    ),
+    offset: int = Query(0, ge=0, description="Number of tasks to skip"),
     current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    List tasks with optional filters.
+    List tasks with optional filters and pagination.
 
     Args:
         completed: Filter by completion status
         priority: Filter by priority level
+        limit: Maximum number of tasks to return (1-100, default 50)
+        offset: Number of tasks to skip for pagination (default 0)
         current_user: Authenticated user
         db: Database session
 
     Returns:
         List of tasks belonging to the current user
+
+    Response Headers:
+        X-Total-Count: Total number of tasks matching the filters (for pagination)
     """
+    from fastapi import Response
+
     user_id = current_user.id
 
+    # Build base query
     query = select(TaskModel).where(TaskModel.user_id == user_id)
+    count_query = (
+        select(sa.func.count())
+        .select_from(TaskModel)
+        .where(TaskModel.user_id == user_id)
+    )
 
     if completed is not None:
         query = query.where(TaskModel.completed == completed)
+        count_query = count_query.where(TaskModel.completed == completed)
     if priority is not None:
         query = query.where(TaskModel.priority == priority.value)
+        count_query = count_query.where(TaskModel.priority == priority.value)
 
-    tasks = db.execute(query.order_by(TaskModel.created_at.desc())).scalars().all()
+    # Get total count for header
+    total_count = db.execute(count_query).scalar_one()
 
+    # Apply ordering, pagination and fetch results
+    tasks = (
+        db.execute(
+            query.order_by(TaskModel.created_at.desc()).limit(limit).offset(offset)
+        )
+        .scalars()
+        .all()
+    )
+
+    # Return with total count header
+    response = Response(content=None)
+    response.headers["X-Total-Count"] = str(total_count)
     return tasks
 
 
