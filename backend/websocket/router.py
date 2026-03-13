@@ -17,6 +17,7 @@ from fastapi import (
     Query,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from backend.database import get_db
 from backend.models.user import User as UserModel
@@ -59,7 +60,7 @@ async def get_user_from_token(token: str, db: Session) -> Optional[UserModel]:
     if payload is None:
         return None
 
-    username: str = payload.get("sub")
+    username: Optional[str] = payload.get("sub")
     if username is None:
         return None
 
