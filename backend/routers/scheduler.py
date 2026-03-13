@@ -9,7 +9,7 @@ import logging
 from typing import List, Optional
 from datetime import datetime, time
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 
 from backend.database import get_db
@@ -18,6 +18,7 @@ from backend.models.task import Task as TaskModel
 from backend.models.time_block import TimeBlock as TimeBlockModel
 from backend.models.timeline import Timeline as TimelineModel
 from backend.models.timeline_task import TimelineTask as TimelineTaskModel
+from backend.models.task_chain import TaskChain as TaskChainModel
 from backend.scheduler.engine import TaskScheduler, schedule_tasks
 from backend.scheduler.conflicts import detect_schedule_conflicts
 from backend.auth.utils import get_current_user
@@ -95,6 +96,21 @@ async def generate_schedule(
             detail="No incomplete tasks to schedule",
         )
 
+    # 1a. Fetch task dependencies from task_chains table
+    task_ids = [task.id for task in tasks]
+    chains_query = select(TaskChainModel).where(
+        TaskChainModel.task_id.in_(task_ids),
+        TaskChainModel.relationship_type == "depends_on",
+    )
+    chains = db.execute(chains_query).scalars().all()
+
+    # Build dependency dict: task_id -> list of prerequisite_task_ids
+    dependencies = {}
+    for chain in chains:
+        if chain.task_id not in dependencies:
+            dependencies[chain.task_id] = []
+        dependencies[chain.task_id].append(chain.prerequisite_task_id)
+
     # Prepare tasks data for scheduler
     tasks_data = []
     for task in tasks:
@@ -105,7 +121,7 @@ async def generate_schedule(
             "duration": task.estimated_duration or 60,  # default 60 minutes
             "priority": task.priority or "medium",
             "due_date": task.due_date,
-            "dependencies": [],  # TODO: load dependencies from task_chains table
+            "dependencies": dependencies.get(task.id, []),
         }
         tasks_data.append(task_dict)
 
@@ -292,11 +308,11 @@ async def get_schedule(
     """
     user_id = current_user.id
 
-    # Fetch timeline
+    # Fetch timeline with eager loading of tasks and their associated tasks
     timeline = db.execute(
-        select(TimelineModel).where(
-            TimelineModel.id == timeline_id, TimelineModel.user_id == user_id
-        )
+        select(TimelineModel)
+        .options(selectinload(TimelineModel.tasks).selectinload(TimelineTaskModel.task))
+        .where(TimelineModel.id == timeline_id, TimelineModel.user_id == user_id)
     ).scalar_one_or_none()
 
     if not timeline:

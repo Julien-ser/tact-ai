@@ -8,6 +8,7 @@ Classifies tasks into one of four Eisenhower quadrants:
 - not_important_not_urgent: Neither important nor urgent (eliminate/decrease)
 """
 
+import hashlib
 import json
 import logging
 from typing import Optional, Dict, Any, Literal
@@ -90,7 +91,9 @@ class EisenhowerQuadrantClassifier:
     ) -> str:
         """Generate a cache key for a task"""
         content = f"{task_title}|{task_description or ''}"
-        return f"eisenhower:{hash(content)}"
+        # Use SHA256 for deterministic hash across processes
+        content_hash = hashlib.sha256(content.encode()).hexdigest()
+        return f"eisenhower:{content_hash}"
 
     async def _classify_with_gpt4(
         self, task_title: str, task_description: Optional[str] = None

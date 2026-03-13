@@ -9,20 +9,22 @@ CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 -- These are production optimizations
 
 -- Tasks table indexes for common query patterns
-CREATE INDEX IF NOT EXISTS idx_tasks_user_status ON tasks(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_tasks_user_due_date ON tasks(user_id, due_date);
+-- Note: Single-column indexes are created by Alembic migrations
+-- These composite indexes optimize common query patterns
+CREATE INDEX IF NOT EXISTS idx_tasks_user_completed ON tasks(user_id, completed);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_priority ON tasks(user_id, priority);
 CREATE INDEX IF NOT EXISTS idx_tasks_user_quadrant ON tasks(user_id, quadrant);
-CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_due_date ON tasks(user_id, due_date);
 
--- Task chains indexes
-CREATE INDEX IF NOT EXISTS idx_task_chains_from_task ON task_chains(from_task_id);
-CREATE INDEX IF NOT EXISTS idx_task_chains_to_task ON task_chains(to_task_id);
+-- Task chains indexes (using actual column names from schema)
+CREATE INDEX IF NOT EXISTS idx_task_chains_task_id ON task_chains(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_chains_prerequisite_task_id ON task_chains(prerequisite_task_id);
 
 -- Timelines indexes
-CREATE INDEX IF NOT EXISTS idx_timelines_user_date ON timelines(user_id, generated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_timelines_user_generated ON timelines(user_id, generated_at DESC);
 
--- Time blocks indexes
-CREATE INDEX IF NOT EXISTS idx_time_blocks_user_date ON time_blocks(user_id, start_date, end_date);
+-- Time blocks indexes (using actual column names: day_of_week, start_time, end_time)
+CREATE INDEX IF NOT EXISTS idx_time_blocks_user_day ON time_blocks(user_id, day_of_week);
 
 -- Auth-related indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
