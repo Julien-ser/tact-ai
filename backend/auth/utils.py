@@ -61,3 +61,51 @@ def decode_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+async def get_current_user(
+    token: str,
+    db: Session,
+) -> "UserModel":
+    """
+    Dependency to get the current authenticated user from JWT token.
+
+    Args:
+        token: JWT token from Authorization header
+        db: Database session
+
+    Returns:
+        Authenticated user model
+
+    Raises:
+        HTTPException 401 if token is invalid or user not found
+    """
+    from fastapi import HTTPException
+    from fastapi import status
+    from sqlalchemy.orm import Session
+    from sqlalchemy import select
+    from backend.models.user import User as UserModel
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_token(token)
+    if payload is None:
+        raise credentials_exception
+
+    username: str = payload.get("sub")
+    if username is None:
+        raise credentials_exception
+
+    # Find user by email (username)
+    user = db.execute(
+        select(UserModel).where(UserModel.email == username)
+    ).scalar_one_or_none()
+
+    if user is None:
+        raise credentials_exception
+
+    return user

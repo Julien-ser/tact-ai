@@ -20,7 +20,7 @@
  - [x] **Develop real-time updates (optional)**: Add FastAPI WebSocket endpoint and React Socket.IO client to push schedule changes and conflict alerts to connected users.
 
 ## Phase 4: Testing, Deployment & Operations
-- [ ] **Write comprehensive test suite**: Achieve >80% coverage for classifier, dependency resolver, scheduler, and conflict detection. Include integration tests for main API routes. Set up Codecov reporting.
+- [x] **Write comprehensive test suite**: Achieve >80% coverage for classifier, dependency resolver, scheduler, and conflict detection. Include integration tests for main API routes. Set up Codecov reporting.
 - [ ] **Prepare production deployment**: Write optimized Dockerfiles for backend (Gunicorn + Uvicorn workers) and frontend (Nginx static build). Configure Nginx reverse proxy, PostgreSQL, and Redis in `docker-compose.prod.yml`. Document in `docs/deployment.md`.
 - [ ] **Perform load testing and optimization**: Use k6 to simulate 100+ concurrent users. Profile scheduler performance, add database indexing, implement pagination on task lists, and tune Redis caching. Record results.
 - [ ] **Set up monitoring and observability**: Integrate Sentry for errors, expose Prometheus metrics (API latency, scheduling duration). Create Grafana dashboard and alert rules. Write runbooks in `docs/operations.md`.

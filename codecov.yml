@@ -1,0 +1,56 @@
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: nearest
+  status:
+    project:
+      default:
+        target: 80  # Require at least 80% coverage
+        threshold: 0.5  # Allow only 0.5% drop before failing
+        if_no_uploads: error
+        if_ci_failed: error
+    patch:
+      default:
+        target: auto
+        threshold: 0.1
+    changes: no
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      macro: no
+      method: no
+
+comment:
+  layout: "reach, diff, flags, files, footer"
+  behavior: default
+
+flags:
+  backend:
+    paths:
+      - backend/
+    carryforward: false
+  integration:
+    paths:
+      - tests/integration/
+    carryforward: false
+  unit:
+    paths:
+      - tests/unit/
+    carryforward: false
+
+ignore:
+  - "backend/alembic/*"
+  - "backend/__init__.py"
+  - "backend/models/__init__.py"
+  - "backend/auth/__init__.py"
+  - "backend/ai/__init__.py"
+  - "backend/scheduler/__init__.py"
+  - "backend/websocket/__init__.py"
+  - "tests/**/__init__.py"

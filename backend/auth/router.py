@@ -24,48 +24,6 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Session = Depends(get_db),
-) -> UserModel:
-    """
-    Dependency to get the current authenticated user from JWT token.
-
-    Args:
-        token: JWT token from Authorization header
-        db: Database session
-
-    Returns:
-        Authenticated user model
-
-    Raises:
-        HTTPException 401 if token is invalid or user not found
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    payload = decode_token(token)
-    if payload is None:
-        raise credentials_exception
-
-    username: str = payload.get("sub")
-    if username is None:
-        raise credentials_exception
-
-    # Find user by email (username)
-    user = db.execute(
-        select(UserModel).where(UserModel.email == username)
-    ).scalar_one_or_none()
-
-    if user is None:
-        raise credentials_exception
-
-    return user
-
-
 @router.post(
     "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
