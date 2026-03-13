@@ -389,3 +389,10 @@ Untracked files:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 [0m
+[0m$ [0mgit -c core.excludesfile= add -f tests/integration/test_tasks.py tests/integration/test_scheduler.py codecov.yml README.md TASKS.md && git status --short
+M logs/worker-session-20260312-213537.log
+?? docker-compose.prod.yml
+?? docker/Dockerfile.backend.prod
+?? logs/iteration-204.md
+[0m
+Let me try bypassing any global gitignore:
